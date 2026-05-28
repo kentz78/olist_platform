@@ -9,11 +9,17 @@ WITH mart_counts AS (
     SELECT 'mart_customer_lifetime_value', COUNT(*)
     FROM `{{ env_var('GCP_PROJECT_ID', 'olist-analytics-01') }}.olist_analytics_marts.mart_customer_lifetime_value`
     UNION ALL
+    SELECT 'mart_geo_performance',         COUNT(*)
+    FROM `{{ env_var('GCP_PROJECT_ID', 'olist-analytics-01') }}.olist_analytics_marts.mart_geo_performance`
+    UNION ALL
     SELECT 'mart_seller_performance',      COUNT(*)
     FROM `{{ env_var('GCP_PROJECT_ID', 'olist-analytics-01') }}.olist_analytics_marts.mart_seller_performance`
     UNION ALL
     SELECT 'mart_marketing_funnel',        COUNT(*)
     FROM `{{ env_var('GCP_PROJECT_ID', 'olist-analytics-01') }}.olist_analytics_marts.mart_marketing_funnel`
+    UNION ALL
+    SELECT 'mart_logistics_performance',   COUNT(*)
+    FROM `{{ env_var('GCP_PROJECT_ID', 'olist-analytics-01') }}.olist_analytics_marts.mart_logistics_performance`
     UNION ALL
     SELECT 'mart_product_performance',     COUNT(*)
     FROM `{{ env_var('GCP_PROJECT_ID', 'olist-analytics-01') }}.olist_analytics_marts.mart_product_performance`

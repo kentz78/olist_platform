@@ -35,7 +35,7 @@ import json
 import logging
 import time
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 import pandas as pd
@@ -209,7 +209,7 @@ def load_csv(file_path: Path, config: Dict, dataset_name: str) -> pd.DataFrame:
         )
 
     df = pd.read_csv(file_path, parse_dates=config.get("parse_dates", []), low_memory=False)
-    df["_ingested_at"]   = datetime.utcnow()
+    df["_ingested_at"]   = datetime.now(timezone.utc)
     df["_source_file"]   = file_path.name
 
     logger.info("  Loaded %d rows × %d cols", len(df), len(df.columns))
@@ -324,7 +324,7 @@ def run_ingestion(
             failed.append(ds_name)
 
     summary = {
-        "run_at": datetime.utcnow().isoformat(),
+        "run_at": datetime.now(timezone.utc).isoformat(),
         "succeeded": succeeded, "failed": failed,
         "warnings": all_warnings,
         "load_log": loader.get_load_summary().to_dict("records") if succeeded else [],

@@ -1,5 +1,7 @@
--- Test: for delivered orders, total payment_value should be within 1% of total_order_value.
--- Catches transformation bugs where payment aggregation diverges from item totals.
+-- Test: FactOrders.total_payment_value must exactly match SUM(FactPayments.payment_value).
+-- Both are derived from the same raw payments table, so any divergence is a transformation bug.
+-- Note: total_order_value (item prices) != total_payment_value intentionally — vouchers/discounts
+-- mean customers sometimes pay less than the item total. That is expected Olist data behaviour.
 -- Returns rows on failure.
 
 WITH payment_totals AS (
@@ -9,11 +11,9 @@ WITH payment_totals AS (
 )
 SELECT
     fo.order_id,
-    fo.total_order_value,
+    fo.total_payment_value,
     pt.sum_paid,
-    ABS(fo.total_order_value - pt.sum_paid) / NULLIF(fo.total_order_value, 0) AS pct_diff
+    ABS(fo.total_payment_value - pt.sum_paid) AS abs_diff
 FROM `{{ env_var('GCP_PROJECT_ID', 'olist-analytics-01') }}.olist_analytics.FactOrders` fo
 JOIN payment_totals pt USING (order_id)
-WHERE fo.order_status = 'delivered'
-  AND fo.total_order_value > 0
-  AND ABS(fo.total_order_value - pt.sum_paid) / fo.total_order_value > 0.01
+WHERE ROUND(fo.total_payment_value, 2) != ROUND(pt.sum_paid, 2)

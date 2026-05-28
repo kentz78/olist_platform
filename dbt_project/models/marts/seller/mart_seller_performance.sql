@@ -28,7 +28,11 @@ WITH seller_items AS (
         o.is_on_time
     FROM {{ ref('stg_order_items') }}  oi
     JOIN {{ ref('stg_orders') }}       o  USING (order_id)
-    LEFT JOIN {{ ref('stg_reviews') }} r  ON oi.order_id = r.order_id
+    LEFT JOIN (
+        SELECT order_id, MAX(review_score) AS review_score
+        FROM {{ ref('stg_reviews') }}
+        GROUP BY order_id
+    ) r ON oi.order_id = r.order_id
 ),
 
 seller_agg AS (

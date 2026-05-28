@@ -35,7 +35,11 @@ WITH item_base AS (
     FROM {{ ref('stg_order_items') }}  oi
     JOIN {{ ref('stg_products') }}     p  USING (product_id)
     JOIN {{ ref('stg_orders') }}       o  USING (order_id)
-    LEFT JOIN {{ ref('stg_reviews') }}   r  ON oi.order_id   = r.order_id
+    LEFT JOIN (
+        SELECT order_id, MAX(review_score) AS review_score
+        FROM {{ ref('stg_reviews') }}
+        GROUP BY order_id
+    ) r ON oi.order_id = r.order_id
     LEFT JOIN {{ ref('stg_customers') }} c  ON o.customer_id = c.customer_id
     WHERE o.order_status NOT IN ('canceled', 'unavailable')
 ),

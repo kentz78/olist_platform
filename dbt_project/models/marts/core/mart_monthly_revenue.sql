@@ -62,7 +62,7 @@ SELECT
     unique_customers,
     ROUND(avg_item_price, 2)                             AS avg_item_price,
     ROUND(total_revenue / NULLIF(order_count, 0), 2)     AS avg_order_value,
-    prev_month_revenue,
+    ROUND(prev_month_revenue, 2)                              AS prev_month_revenue,
     mom_growth_pct,
     ROUND(ytd_revenue, 2)                                AS ytd_revenue
 FROM with_growth

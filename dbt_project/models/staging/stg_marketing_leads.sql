@@ -12,7 +12,7 @@ SELECT
     d.lead_behaviour_profile,
     d.business_type,
     COALESCE(d.declared_monthly_revenue, 0)  AS declared_monthly_revenue,
-    CASE WHEN d.seller_id IS NOT NULL THEN TRUE ELSE FALSE END AS is_converted,
+    d.seller_id IS NOT NULL                                   AS is_converted,
     CURRENT_TIMESTAMP()                      AS _stg_loaded_at
 FROM {{ source('olist_raw', 'marketing_qualified_leads') }} m
 LEFT JOIN {{ source('olist_raw', 'closed_deals') }} d USING (mql_id)

@@ -29,7 +29,7 @@ Environment variables (set in .env at project root)
 import logging
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List
 
@@ -60,9 +60,9 @@ class ValidationResult:
         self.column  = column
         self.passed  = passed
         self.detail  = detail
-        self.timestamp = datetime.utcnow()
+        self.timestamp = datetime.now(timezone.utc)
 
-    def __repr__(self):
+    def __str__(self):
         status = "✅ PASS" if self.passed else "❌ FAIL"
         return f"{status} | {self.dataset}.{self.column} | {self.rule} | {self.detail}"
 
@@ -99,7 +99,8 @@ class DataQualityValidator:
                             f"violations={violations} (min={min_val}, max={max_val})")
 
     def expect_column_values_in_set(self, df, col, dataset, value_set):
-        invalid = df[col].dropna()[~df[col].dropna().isin(value_set)]
+        non_null = df[col].dropna()
+        invalid  = non_null[~non_null.isin(value_set)]
         return self._record("accepted_values", dataset, col, len(invalid) == 0,
                             f"invalid_count={len(invalid)}, examples={invalid.unique()[:3].tolist()}")
 
@@ -135,7 +136,7 @@ class DataQualityValidator:
         passed = int(df["passed"].sum())
         failed = total - passed
         print(f"\n{'='*60}")
-        print(f"DATA QUALITY REPORT — {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}")
+        print(f"DATA QUALITY REPORT — {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
         print(f"{'='*60}")
         print(f"Total checks : {total}")
         print(f"Passed       : {passed} ({passed/total*100:.1f}%)")
@@ -252,6 +253,21 @@ def run_marketing_suite(v, ds):
                            "marketing_funnel", "won_after_contact", max_violations=1)  # 1 known anomaly in source data
 
 
+def run_products_suite(v, ds):
+    products = ds["products"]
+    v.expect_column_not_null(products, "product_id", "products")
+    v.expect_column_unique(products, "product_id", "products")
+    v.expect_column_between(products, "product_weight_g", "products", min_val=0)
+    v.expect_column_between(products, "product_photos_qty", "products", min_val=0)
+
+
+def run_sellers_suite(v, ds):
+    sellers = ds["sellers"]
+    v.expect_column_not_null(sellers, "seller_id", "sellers")
+    v.expect_column_unique(sellers, "seller_id", "sellers")
+    v.expect_column_not_null(sellers, "seller_state", "sellers")
+
+
 # ── Main runner ───────────────────────────────────────────────────────────────
 def run_all_validations(data_dir: Path = DATA_DIR):
     """Run complete DQ validation suite and return (results_df, all_passed)."""
@@ -265,6 +281,8 @@ def run_all_validations(data_dir: Path = DATA_DIR):
     if "orders"      in ds: run_orders_suite(validator, ds)
     if "order_items" in ds: run_order_items_suite(validator, ds)
     if "customers"   in ds: run_customers_suite(validator, ds)
+    if "products"    in ds: run_products_suite(validator, ds)
+    if "sellers"     in ds: run_sellers_suite(validator, ds)
     if "payments"    in ds: run_payments_suite(validator, ds)
     if "reviews"     in ds: run_reviews_suite(validator, ds)
     if "mql"         in ds: run_marketing_suite(validator, ds)

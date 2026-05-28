@@ -15,8 +15,9 @@ Schedule  : Daily at 06:00 UTC
 SLA       : Must complete within 90 minutes (by 07:30 UTC)
 """
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
+import pendulum
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
@@ -44,7 +45,7 @@ with DAG(
     default_args=DEFAULT_ARGS,
     description="Olist end-to-end analytics pipeline: ingest → quality → transform → export",
     schedule_interval="0 6 * * *",
-    start_date=datetime(2024, 1, 1),
+    start_date=pendulum.datetime(2024, 1, 1, tz="UTC"),
     catchup=False,
     max_active_runs=1,
     tags=["olist", "production", "daily"],
@@ -94,7 +95,15 @@ with DAG(
 
     dq_gate = EmptyOperator(task_id="dq_gate")
 
-    # ── 3. DBT Staging ────────────────────────────────────────────────────────
+    # ── 3. Star schema DDL ────────────────────────────────────────────────────
+    build_schema = BashOperator(
+        task_id="build_star_schema",
+        bash_command=f"{PYTHON} scripts/run_schema.py",
+        execution_timeout=timedelta(minutes=15),
+        doc_md="Build dimension and fact tables (DimDate, DimGeography, FactOrders, etc.).",
+    )
+
+    # ── 4. DBT Staging ────────────────────────────────────────────────────────
     dbt_stg_core = BashOperator(
         task_id="dbt_staging_core",
         bash_command=f"{DBT} run --select tag:staging --exclude stg_geolocation --target prod",
@@ -196,8 +205,8 @@ with DAG(
     ingest_core >> dq_core
     ingest_geo  >> dq_geo
     [dq_core, dq_geo] >> dq_gate
-    dq_gate >> [dbt_stg_core, dbt_stg_geo]
-    [dbt_stg_core, dbt_stg_geo] >> staging_gate
+    dq_gate >> [build_schema, dbt_stg_core, dbt_stg_geo]
+    [build_schema, dbt_stg_core, dbt_stg_geo] >> staging_gate
     staging_gate >> [
         dbt_mart_revenue, dbt_mart_clv, dbt_mart_geo,
         dbt_mart_seller, dbt_mart_marketing, dbt_mart_logistics, dbt_mart_product,

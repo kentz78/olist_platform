@@ -228,7 +228,9 @@ def transform_geolocation(df: pd.DataFrame) -> pd.DataFrame:
 
     geo_agg['state_name']        = geo_agg['state_code'].map(STATE_NAMES).fillna('Unknown')
     geo_agg['region']            = geo_agg['state_code'].map(STATE_REGION_MAP).fillna('Unknown')
-    geo_agg['is_frontier_market']= geo_agg['region'].isin(['North', 'Northeast'])
+    # FALSE = low e-comm penetration states; must match stg_geolocation.high_ecomm_penetration
+    _LOW_ECOMM = {'AC', 'AL', 'AM', 'AP', 'MA', 'PB', 'RN', 'RO', 'RR', 'TO'}
+    geo_agg['is_frontier_market']= ~geo_agg['state_code'].isin(_LOW_ECOMM)
     geo_agg['geographic_zone']   = np.select(
         [(geo_agg['latitude'] < -15) & (geo_agg['longitude'] > -50),
          geo_agg['latitude'] > -5,

@@ -15,7 +15,10 @@ import os
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
-PROJECT = os.environ["GCP_PROJECT_ID"]
+PROJECT = os.environ.get("GCP_PROJECT_ID")
+if not PROJECT:
+    print("❌  GCP_PROJECT_ID is not set — add it to .env or export it before running.")
+    sys.exit(1)
 SCHEMA  = Path(__file__).resolve().parents[1] / "warehouse" / "schema.sql"
 
 client = bigquery.Client(project=PROJECT)

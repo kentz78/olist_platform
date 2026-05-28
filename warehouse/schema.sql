@@ -108,7 +108,7 @@ deduped AS (
 state_meta AS (
   SELECT * FROM UNNEST([
     STRUCT('AC' AS state_code, 'Acre'              AS state_name, 'North'     AS region, FALSE AS is_frontier_market),
-    STRUCT('AL',               'Alagoas',                         'Northeast',            TRUE),
+    STRUCT('AL',               'Alagoas',                         'Northeast',            FALSE),
     STRUCT('AM',               'Amazonas',                        'North',                FALSE),
     STRUCT('AP',               'Amapá',                           'North',                FALSE),
     STRUCT('BA',               'Bahia',                           'Northeast',            TRUE),
@@ -118,12 +118,12 @@ state_meta AS (
     STRUCT('GO',               'Goiás',                           'Midwest',              TRUE),
     STRUCT('MA',               'Maranhão',                        'Northeast',            FALSE),
     STRUCT('MG',               'Minas Gerais',                    'Southeast',            TRUE),
-    STRUCT('MS',               'Mato Grosso do Sul',              'Midwest',              FALSE),
-    STRUCT('MT',               'Mato Grosso',                     'Midwest',              FALSE),
-    STRUCT('PA',               'Pará',                            'North',                FALSE),
+    STRUCT('MS',               'Mato Grosso do Sul',              'Midwest',              TRUE),
+    STRUCT('MT',               'Mato Grosso',                     'Midwest',              TRUE),
+    STRUCT('PA',               'Pará',                            'North',                TRUE),
     STRUCT('PB',               'Paraíba',                         'Northeast',            FALSE),
     STRUCT('PE',               'Pernambuco',                      'Northeast',            TRUE),
-    STRUCT('PI',               'Piauí',                           'Northeast',            FALSE),
+    STRUCT('PI',               'Piauí',                           'Northeast',            TRUE),
     STRUCT('PR',               'Paraná',                          'South',                TRUE),
     STRUCT('RJ',               'Rio de Janeiro',                  'Southeast',            TRUE),
     STRUCT('RN',               'Rio Grande do Norte',             'Northeast',            FALSE),
@@ -131,7 +131,7 @@ state_meta AS (
     STRUCT('RR',               'Roraima',                         'North',                FALSE),
     STRUCT('RS',               'Rio Grande do Sul',               'South',                TRUE),
     STRUCT('SC',               'Santa Catarina',                  'South',                TRUE),
-    STRUCT('SE',               'Sergipe',                         'Northeast',            FALSE),
+    STRUCT('SE',               'Sergipe',                         'Northeast',            TRUE),
     STRUCT('SP',               'São Paulo',                       'Southeast',            TRUE),
     STRUCT('TO',               'Tocantins',                       'North',                FALSE)
   ])
@@ -203,7 +203,7 @@ AS
 SELECT
   p.product_id,
   p.product_category_name,
-  COALESCE(t.product_category_name_english, p.product_category_name) AS category_english,
+  COALESCE(t.product_category_name_english, p.product_category_name, 'Unknown') AS category_english,
   p.product_name_lenght         AS product_name_length,
   p.product_description_lenght  AS product_description_length,
   p.product_photos_qty,

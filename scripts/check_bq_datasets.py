@@ -36,10 +36,8 @@ REQUIRED_DATASETS = [
     ("olist_analytics_marts",    "DBT mart tables (pre-aggregated KPIs)"),
 ]
 
-client = bigquery.Client(project=PROJECT)
 
-
-def dataset_exists(dataset_id: str) -> bool:
+def dataset_exists(client: bigquery.Client, dataset_id: str) -> bool:
     try:
         client.get_dataset(f"{PROJECT}.{dataset_id}")
         return True
@@ -47,7 +45,7 @@ def dataset_exists(dataset_id: str) -> bool:
         return False
 
 
-def create_dataset(dataset_id: str, description: str):
+def create_dataset(client: bigquery.Client, dataset_id: str, description: str):
     ds = bigquery.Dataset(f"{PROJECT}.{dataset_id}")
     ds.location = REGION
     ds.description = description
@@ -55,7 +53,7 @@ def create_dataset(dataset_id: str, description: str):
     print(f"  ✅ Created dataset: {dataset_id}")
 
 
-def olist_raw_has_tables() -> bool:
+def olist_raw_has_tables(client: bigquery.Client) -> bool:
     tables = list(client.list_tables(f"{PROJECT}.olist_raw"))
     return len(tables) > 0
 
@@ -65,10 +63,12 @@ def main():
     print(f"  Region  : {REGION}")
     print()
 
+    client = bigquery.Client(project=PROJECT)
+
     missing = [
         (ds_id, desc)
         for ds_id, desc in REQUIRED_DATASETS
-        if not dataset_exists(ds_id)
+        if not dataset_exists(client, ds_id)
     ]
 
     if missing:
@@ -78,13 +78,13 @@ def main():
         print()
         print("  Creating all required datasets automatically...")
         for ds_id, desc in REQUIRED_DATASETS:
-            create_dataset(ds_id, desc)
+            create_dataset(client, ds_id, desc)
         print()
         print("  ✅ All datasets ready — pipeline will proceed.")
         sys.exit(0)
 
     # All datasets exist — check whether olist_raw already has data
-    if olist_raw_has_tables():
+    if olist_raw_has_tables(client):
         print("  ⚠️  WARNING — olist_raw already contains tables.")
         print()
         print("  Choose an option:")
@@ -104,7 +104,7 @@ def main():
             print()
             print("  Recreating datasets...")
             for ds_id, desc in REQUIRED_DATASETS:
-                create_dataset(ds_id, desc)
+                create_dataset(client, ds_id, desc)
             print()
             print("  ✅ Clean reset complete — pipeline will proceed.")
 
