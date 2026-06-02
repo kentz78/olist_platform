@@ -142,6 +142,12 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
+      - name: Install dbt package dependencies
+        working-directory: dbt_project
+        env:
+          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+        run: dbt deps --profiles-dir profiles
+
       # --target prod uses 8 threads and interactive priority — appropriate
       # for a scheduled production run (vs dev which uses 4 threads).
       - name: Run staging models (9 views)
@@ -184,6 +190,12 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
+      - name: Install dbt package dependencies
+        working-directory: dbt_project
+        env:
+          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+        run: dbt deps --profiles-dir profiles
+
       - name: Run mart models (7 tables — full refresh + incremental)
         working-directory: dbt_project
         env:
@@ -222,6 +234,12 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Install dbt package dependencies
+        working-directory: dbt_project
+        env:
+          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+        run: dbt deps --profiles-dir profiles
 
       # test_type:singular selects all singular SQL test files from tests/.
       # These 6 assertions verify cross-table referential integrity and
