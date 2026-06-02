@@ -84,6 +84,12 @@ jobs:
             echo "No previous manifest — will fall back to full staging build."
           fi
 
+      - name: Install dbt package dependencies
+        working-directory: dbt_project
+        env:
+          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+        run: dbt deps --profiles-dir profiles
+
       # dbt compile connects to BigQuery to resolve source schemas and validate
       # SQL. This is the strictest validation possible without executing models:
       # column references, function names, and JOIN keys are all verified.
@@ -136,6 +142,12 @@ jobs:
             "gs://${{ vars.GCS_BUCKET_NAME }}/dbt-state/manifest.json" \
             /tmp/dbt-state/manifest.json
 
+      - name: Install dbt package dependencies
+        working-directory: dbt_project
+        env:
+          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+        run: dbt deps --profiles-dir profiles
+
       # state:modified+  = the changed model + ALL downstream dependents.
       # Example: if mart_seller_performance.sql changed, this builds:
       #   mart_seller_performance + stg_sellers + stg_order_items + stg_reviews
@@ -177,6 +189,12 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Install dbt package dependencies
+        working-directory: dbt_project
+        env:
+          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+        run: dbt deps --profiles-dir profiles
 
       - name: Build & test all staging models
         working-directory: dbt_project
