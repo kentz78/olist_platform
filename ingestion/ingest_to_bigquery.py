@@ -71,11 +71,7 @@ DATASET_CONFIG: Dict[str, Dict] = {
     "orders": {
         "file": "olist_orders_dataset.csv",
         "table": "raw_orders",
-        "parse_dates": [
-            "order_purchase_timestamp", "order_approved_at",
-            "order_delivered_carrier_date", "order_delivered_customer_date",
-            "order_estimated_delivery_date",
-        ],
+        "parse_dates": [],
         "primary_key": "order_id",
         "incremental_col": "order_purchase_timestamp",
         "required_cols": ["order_id", "customer_id", "order_status"],
@@ -84,7 +80,7 @@ DATASET_CONFIG: Dict[str, Dict] = {
     "order_items": {
         "file": "olist_order_items_dataset.csv",
         "table": "raw_order_items",
-        "parse_dates": ["shipping_limit_date"],
+        "parse_dates": [],
         "primary_key": None,
         "incremental_col": "shipping_limit_date",
         "required_cols": ["order_id", "product_id", "seller_id", "price"],
@@ -129,7 +125,7 @@ DATASET_CONFIG: Dict[str, Dict] = {
     "reviews": {
         "file": "olist_order_reviews_dataset.csv",
         "table": "raw_order_reviews",
-        "parse_dates": ["review_creation_date", "review_answer_timestamp"],
+        "parse_dates": [],
         "primary_key": None,  # review_id is not unique in the Olist source data (814 duplicates)
         "incremental_col": "review_creation_date",
         "required_cols": ["review_id", "order_id", "review_score"],
@@ -147,7 +143,7 @@ DATASET_CONFIG: Dict[str, Dict] = {
     "mql": {
         "file": "olist_marketing_qualified_leads_dataset.csv",
         "table": "raw_marketing_qualified_leads",
-        "parse_dates": ["first_contact_date"],
+        "parse_dates": [],
         "primary_key": "mql_id",
         "incremental_col": "first_contact_date",
         "required_cols": ["mql_id", "first_contact_date", "origin"],
@@ -156,7 +152,7 @@ DATASET_CONFIG: Dict[str, Dict] = {
     "closed_deals": {
         "file": "olist_closed_deals_dataset.csv",
         "table": "raw_closed_deals",
-        "parse_dates": ["won_date"],
+        "parse_dates": [],
         "primary_key": "mql_id",
         "incremental_col": "won_date",
         "required_cols": ["mql_id", "seller_id", "won_date"],
