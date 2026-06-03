@@ -47,16 +47,17 @@ plugins:
             path: $MELTANO_PROJECT_ROOT/data/raw/product_category_name_translation.csv
             keys: [product_category_name]
 
-  # ── Loader: registered for reference; actual loading uses ingest_to_bigquery.py
-  # Both adswerve (SchemaField API mismatch) and transferwise (orjson Rust build)
-  # variants are incompatible with google-cloud-bigquery 3.x in this environment.
+  # ── Loader: adswerve target-bigquery (fully working as of 2026-06-03)
+  # Fix: pin numpy<2.0 (pyarrow 10.0.1 needs NumPy 1.x) and set location: US
+  # (Meltano Hub defaults location to us-central1 which mismatches the US multi-region dataset).
   loaders:
     - name: target-bigquery
       variant: adswerve
-      pip_url: target-bigquery
+      pip_url: git+https://github.com/adswerve/target-bigquery.git setuptools "numpy<2.0"
       config:
         project_id: $GCP_PROJECT_ID
         dataset_id: olist_raw
+        location: US
         credentials_path: $GOOGLE_APPLICATION_CREDENTIALS
 
   # ── Utility: dbt transformation via Meltano dbt utility ──────────────────

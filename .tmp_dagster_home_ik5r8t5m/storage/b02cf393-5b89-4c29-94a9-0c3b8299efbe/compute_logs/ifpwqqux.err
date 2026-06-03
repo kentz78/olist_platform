@@ -1,0 +1,9 @@
+[32m2026-06-03 01:10:57 +0800[0m - dagster - [34mDEBUG[0m - olist_daily_pipeline - b02cf393-5b89-4c29-94a9-0c3b8299efbe - 166951 - LOGS_CAPTURED - Started capturing logs in process (pid: 166951).
+[32m2026-06-03 01:10:57 +0800[0m - dagster - [34mDEBUG[0m - olist_daily_pipeline - b02cf393-5b89-4c29-94a9-0c3b8299efbe - 166951 - meltano_geo_extract_load - STEP_START - Started execution of step "meltano_geo_extract_load".
+[32m2026-06-03 01:10:57 +0800[0m - dagster - [34mINFO[0m - olist_daily_pipeline - b02cf393-5b89-4c29-94a9-0c3b8299efbe - meltano_geo_extract_load - Running: python ingestion/ingest_geolocation.py --mode incremental
+[32m2026-06-03 01:11:02 +0800[0m - dagster - [34mINFO[0m - olist_daily_pipeline - b02cf393-5b89-4c29-94a9-0c3b8299efbe - meltano_geo_extract_load - 2026-06-03T01:11:01 [INFO] geo_ingestor — Source file unchanged (hash match) and tables present. Skipping load.
+2026-06-03T01:11:01 [INFO] geo_ingestor — Audit log → /home/jinava/olist_platform/logs/geo_20260602T171100.json
+
+[32m2026-06-03 01:11:02 +0800[0m - dagster - [34mDEBUG[0m - olist_daily_pipeline - b02cf393-5b89-4c29-94a9-0c3b8299efbe - 166951 - meltano_geo_extract_load - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
+[32m2026-06-03 01:11:02 +0800[0m - dagster - [34mDEBUG[0m - olist_daily_pipeline - b02cf393-5b89-4c29-94a9-0c3b8299efbe - 166951 - meltano_geo_extract_load - ASSET_MATERIALIZATION - Materialized value meltano_geo_extract_load.
+[32m2026-06-03 01:11:02 +0800[0m - dagster - [34mDEBUG[0m - olist_daily_pipeline - b02cf393-5b89-4c29-94a9-0c3b8299efbe - 166951 - meltano_geo_extract_load - STEP_SUCCESS - Finished execution of step "meltano_geo_extract_load" in 4.5s.
