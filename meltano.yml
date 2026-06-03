@@ -75,5 +75,15 @@ plugins:
         keyfile: $GOOGLE_APPLICATION_CREDENTIALS
 
 # ── Pipelines (meltano run shorthand) ─────────────────────────────────────────
+# ⚠️  IMPORTANT — adswerve target-bigquery uses WRITE_APPEND for the temp-table
+# copy step. Running meltano after run_pipeline.sh (which uses WRITE_TRUNCATE)
+# will DOUBLE every row in olist_raw. Always truncate olist_raw tables first:
+#
+#   for t in raw_orders raw_order_items raw_order_payments raw_order_reviews \
+#             raw_products raw_sellers raw_customers raw_closed_deals \
+#             raw_marketing_qualified_leads raw_category_translation; do
+#     bq query --nouse_legacy_sql "TRUNCATE TABLE \`olist-analytics-01.olist_raw.$t\`"
+#   done
+#
 # Run with:  meltano --environment prod run tap-csv target-bigquery
 # Or via Dagster: orchestration/dagster/assets/meltano_assets.py
