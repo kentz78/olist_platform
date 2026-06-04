@@ -104,13 +104,6 @@ jobs:
           DATA_DIR: data/raw/
         run: python data_quality/dq_geolocation.py
 
-      # Apply (or re-apply) the star schema DDL to olist_analytics.
-      # CREATE OR REPLACE is idempotent — safe to run on every full pipeline run.
-      - name: Apply BigQuery star schema DDL
-        env:
-          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-        run: python scripts/run_schema.py
-
       # target-bigquery Meltano plugin is incompatible with google-cloud-bigquery
       # 3.x (SchemaField API mismatch). The canonical ingestion path uses the
       # project's own Python ingestion scripts instead.
@@ -125,6 +118,14 @@ jobs:
           GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
           DATA_DIR: data/raw/
         run: python ingestion/ingest_geolocation.py
+
+      # Apply star schema DDL AFTER both ingestion steps so DimGeography is
+      # built from freshly loaded geolocation data. Matches run_pipeline.sh order:
+      # ingest_to_bigquery → ingest_geolocation → run_schema (star schema DDL).
+      - name: Apply BigQuery star schema DDL
+        env:
+          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+        run: python scripts/run_schema.py
 
   # ── Job 2: dbt Staging Models ──────────────────────────────────────────────
   # Rebuilds all 9 staging views and runs the 35+ staging schema tests.

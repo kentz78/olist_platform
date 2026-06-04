@@ -240,6 +240,7 @@ def transform_geolocation(df: pd.DataFrame) -> pd.DataFrame:
     )
     geo_agg['zip_code_formatted'] = geo_agg['geolocation_zip_code_prefix'].astype(str).str.zfill(5)
     geo_agg['dw_inserted_at']     = datetime.now(timezone.utc).isoformat()
+    geo_agg = geo_agg.rename(columns={'geolocation_zip_code_prefix': 'zip_code_prefix'})
     return geo_agg
 
 
