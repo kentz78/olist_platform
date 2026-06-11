@@ -31,7 +31,9 @@ Environment variables (set in .env at project root)
 import os
 import warnings
 
-warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", message=".*tight_layout.*")
 
 import pandas as pd
 import matplotlib.pyplot as plt

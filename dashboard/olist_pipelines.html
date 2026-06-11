@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline Architecture — Olist Analytics Platform</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy:  #1F3864;
+  --steel: #2E75B6;
+  --teal:  #065A82;
+  --bg:    #F4F6F9;
+  --panel: #FFFFFF;
+  --text:  #1A1A2E;
+  --muted: #64748B;
+  --border:#E2E8F0;
+}
+html { font-size: 15px; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── Header (matches dashboard/index.html) ── */
+.header {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%);
+  padding: 0 32px; height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+.header-brand { display: flex; align-items: center; gap: 12px; }
+.header-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(255,255,255,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: #fff;
+}
+.header-title { font-size: 1.05rem; font-weight: 700; color: #fff; }
+.header-sub   { font-size: 0.75rem; color: rgba(255,255,255,.65); }
+.header-back {
+  font-size: 0.85rem; color: rgba(255,255,255,.85);
+  text-decoration: none; display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 6px;
+  border: 1px solid rgba(255,255,255,.3);
+  transition: background .15s;
+}
+.header-back:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+/* ── Main content ── */
+.main {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 48px 24px;
+}
+.card {
+  background: var(--panel); border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.08);
+  padding: 48px 56px; max-width: 560px; width: 100%;
+  text-align: center;
+}
+.card-icon {
+  width: 64px; height: 64px; border-radius: 16px;
+  background: linear-gradient(135deg, var(--navy), var(--steel));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; margin: 0 auto 24px;
+}
+.card h1 { font-size: 1.5rem; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+.card p  { font-size: 1rem; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+.card-tags { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 32px; }
+.tag {
+  font-size: 0.72rem; font-weight: 600; padding: 4px 10px; border-radius: 4px;
+  background: #EBF3FB; color: var(--steel);
+  font-family: 'Courier New', monospace; letter-spacing: .04em;
+}
+.btn {
+  display: inline-block; padding: 12px 28px;
+  background: linear-gradient(135deg, var(--navy), var(--steel));
+  color: #fff; border-radius: 8px;
+  text-decoration: none; font-weight: 600; font-size: 0.95rem;
+  transition: opacity .15s;
+}
+.btn:hover { opacity: .88; }
+.note {
+  margin-top: 20px; font-size: 0.8rem; color: var(--muted);
+  font-family: 'Courier New', monospace;
+}
+
+/* ── Footer ── */
+footer {
+  text-align: center; padding: 18px;
+  font-size: 0.78rem; color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand">
+    <div class="header-icon">O</div>
+    <div>
+      <div class="header-title">Olist Analytics Platform</div>
+      <div class="header-sub">Pipeline Architecture</div>
+    </div>
+  </div>
+  <a href="index.html" class="header-back">← Dashboard</a>
+</header>
+
+<main class="main">
+  <div class="card">
+    <div class="card-icon">⚙</div>
+    <h1>Pipeline Architecture</h1>
+    <p>
+      A 10-slide walkthrough of the three orchestration layers —
+      local bash pipeline, Dagster asset graph, and GitHub Actions CI/CD.
+    </p>
+    <div class="card-tags">
+      <span class="tag">run_pipeline.sh</span>
+      <span class="tag">Dagster</span>
+      <span class="tag">Meltano</span>
+      <span class="tag">BigQuery</span>
+      <span class="tag">dbt</span>
+      <span class="tag">GitHub Actions</span>
+    </div>
+    <a href="#" class="btn">Coming soon</a>
+    <p class="note">Full presentation will be linked here once published.</p>
+  </div>
+</main>
+
+<footer>
+  Olist Analytics Platform &nbsp;·&nbsp; Pipeline Architecture &nbsp;·&nbsp; Jun 2026
+</footer>
+
+</body>
+</html>

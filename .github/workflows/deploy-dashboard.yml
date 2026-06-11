@@ -3,8 +3,9 @@ name: Deploy — Dashboard to GitHub Pages
 # Fires only when dashboard files change on main.
 #
 # What gets deployed:
-#   dashboard/index.html + dashboard/charts_data.js
-#     → https://<user>.github.io/<repo>/
+#   dashboard/index.html         → https://<user>.github.io/<repo>/
+#   dashboard/charts_data.js     → https://<user>.github.io/<repo>/charts_data.js
+#   dashboard/olist_pipelines.html → https://<user>.github.io/<repo>/olist_pipelines.html
 #
 # No BigQuery credentials needed — this workflow only copies static files.
 # Authentication uses the built-in GITHUB_TOKEN scoped to Pages.
@@ -43,8 +44,9 @@ jobs:
       - name: Assemble static site
         run: |
           mkdir -p _site
-          cp dashboard/index.html    _site/index.html
-          cp dashboard/charts_data.js _site/charts_data.js
+          cp dashboard/index.html          _site/index.html
+          cp dashboard/charts_data.js      _site/charts_data.js
+          cp dashboard/olist_pipelines.html _site/olist_pipelines.html
           echo "Site contents:"
           ls -lh _site/
 
