@@ -38,9 +38,7 @@ from .resources import PROD_RESOURCES
 from .schedules import olist_daily_schedule
 
 # ── Collect all assets ────────────────────────────────────────────────────────
-all_assets = load_assets_from_modules(
-    [meltano_assets, dq_assets, dbt_assets, analytics_assets]
-)
+all_assets = load_assets_from_modules([meltano_assets, dq_assets, dbt_assets, analytics_assets])
 
 # ── Definitions — the Dagster server reads this object ───────────────────────
 defs = Definitions(

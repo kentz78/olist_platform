@@ -82,8 +82,7 @@ def load_csv(filename: str, **kwargs) -> pd.DataFrame:
     path = DATA_DIR / filename
     if not path.exists():
         raise FileNotFoundError(
-            f"CSV not found: {path}\n"
-            f"Ensure all Olist CSV files are placed in: {DATA_DIR}/"
+            f"CSV not found: {path}\nEnsure all Olist CSV files are placed in: {DATA_DIR}/"
         )
     return pd.read_csv(path, **kwargs)
 
@@ -99,9 +98,7 @@ orders = load_csv(
         "order_estimated_delivery_date",
     ],
 )
-order_items = load_csv(
-    "olist_order_items_dataset.csv", parse_dates=["shipping_limit_date"]
-)
+order_items = load_csv("olist_order_items_dataset.csv", parse_dates=["shipping_limit_date"])
 customers = load_csv("olist_customers_dataset.csv")
 products = load_csv("olist_products_dataset.csv")
 sellers = load_csv("olist_sellers_dataset.csv")
@@ -111,9 +108,7 @@ reviews = load_csv(
     parse_dates=["review_creation_date", "review_answer_timestamp"],
 )
 cat_trans = load_csv("product_category_name_translation.csv")
-mql = load_csv(
-    "olist_marketing_qualified_leads_dataset.csv", parse_dates=["first_contact_date"]
-)
+mql = load_csv("olist_marketing_qualified_leads_dataset.csv", parse_dates=["first_contact_date"])
 closed_deals = load_csv("olist_closed_deals_dataset.csv", parse_dates=["won_date"])
 geo = load_csv("olist_geolocation_dataset.csv")
 
@@ -183,9 +178,7 @@ ax1.plot(
     marker="o",
     markersize=4,
 )
-ax1.fill_between(
-    monthly["month_dt"], monthly["revenue"] / 1e6, alpha=0.15, color="#065A82"
-)
+ax1.fill_between(monthly["month_dt"], monthly["revenue"] / 1e6, alpha=0.15, color="#065A82")
 ax1.set_ylabel("Revenue (R$ Millions)")
 ax1.set_title("Monthly GMV")
 ax1.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"R${x:.1f}M"))
@@ -221,15 +214,9 @@ rfm = (
     .reset_index()
 )
 
-rfm["R"] = pd.qcut(rfm["recency"].rank(method="first"), 4, labels=[4, 3, 2, 1]).astype(
-    int
-)
-rfm["F"] = pd.qcut(
-    rfm["frequency"].rank(method="first"), 4, labels=[1, 2, 3, 4]
-).astype(int)
-rfm["M"] = pd.qcut(rfm["monetary"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(
-    int
-)
+rfm["R"] = pd.qcut(rfm["recency"].rank(method="first"), 4, labels=[4, 3, 2, 1]).astype(int)
+rfm["F"] = pd.qcut(rfm["frequency"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+rfm["M"] = pd.qcut(rfm["monetary"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
 rfm["rfm_score"] = rfm["R"] + rfm["F"] + rfm["M"]
 
 
@@ -283,9 +270,7 @@ print(f"At Risk:   {(rfm['segment'] == 'At Risk').sum():,}")
 # ## 5. Chart 3 — Marketing Funnel
 
 # %%
-funnel = mql.merge(
-    closed_deals[["mql_id", "won_date", "seller_id"]], on="mql_id", how="left"
-)
+funnel = mql.merge(closed_deals[["mql_id", "won_date", "seller_id"]], on="mql_id", how="left")
 funnel["converted"] = funnel["seller_id"].notna()
 ch_stats = (
     funnel.groupby("origin")
@@ -367,9 +352,7 @@ print(f"Chart saved: {out}")
 # ## 7. Chart 5 — Delivery Performance
 
 # %%
-delivered_orders = orders[orders["order_status"] == "delivered"].dropna(
-    subset=["delivery_days"]
-)
+delivered_orders = orders[orders["order_status"] == "delivered"].dropna(subset=["delivery_days"])
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 fig.suptitle("Delivery Performance Analysis", fontsize=14, fontweight="bold")
@@ -426,21 +409,15 @@ seller_rev = (
     .reset_index()
 )
 seller_rev = seller_rev.sort_values("revenue", ascending=False).reset_index(drop=True)
-seller_rev["cum_pct"] = (
-    seller_rev["revenue"].cumsum() / seller_rev["revenue"].sum() * 100
-)
+seller_rev["cum_pct"] = seller_rev["revenue"].cumsum() / seller_rev["revenue"].sum() * 100
 seller_rev["seller_pct"] = (seller_rev.index + 1) / len(seller_rev) * 100
 
 top5_rev = (
-    seller_rev[seller_rev["seller_pct"] <= 5]["revenue"].sum()
-    / seller_rev["revenue"].sum()
-    * 100
+    seller_rev[seller_rev["seller_pct"] <= 5]["revenue"].sum() / seller_rev["revenue"].sum() * 100
 )
 tier_bins = [0, 0.05, 0.20, 1.0]
 tier_lbls = ["Top 5%", "Mid 6-20%", "Long Tail"]
-seller_rev["tier"] = pd.cut(
-    seller_rev["seller_pct"] / 100, bins=tier_bins, labels=tier_lbls
-)
+seller_rev["tier"] = pd.cut(seller_rev["seller_pct"] / 100, bins=tier_bins, labels=tier_lbls)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 fig.suptitle("Seller Performance", fontsize=14, fontweight="bold")
@@ -484,17 +461,12 @@ state_orders = (
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 7))
 fig.patch.set_facecolor("white")
-fig.suptitle(
-    "Geographic Demand Analysis", fontsize=14, fontweight="bold", color="#1F3864"
-)
+fig.suptitle("Geographic Demand Analysis", fontsize=14, fontweight="bold", color="#1F3864")
 
 ax1.barh(
     state_orders["customer_state"][::-1],
     state_orders["order_count"][::-1],
-    color=[
-        "#E94F37" if s == "SP" else "#2E75B6"
-        for s in state_orders["customer_state"][::-1]
-    ],
+    color=["#E94F37" if s == "SP" else "#2E75B6" for s in state_orders["customer_state"][::-1]],
 )
 ax1.set_title("Orders by State (Top 15)", color="#1F3864")
 ax1.set_xlabel("Order Count", color="#64748B")

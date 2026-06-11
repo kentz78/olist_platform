@@ -52,9 +52,7 @@ logger = logging.getLogger("olist.data_quality")
 
 # ── Validation result ─────────────────────────────────────────────────────────
 class ValidationResult:
-    def __init__(
-        self, rule: str, dataset: str, column: str, passed: bool, detail: str = ""
-    ):
+    def __init__(self, rule: str, dataset: str, column: str, passed: bool, detail: str = ""):
         self.rule = rule
         self.dataset = dataset
         self.column = column
@@ -92,9 +90,7 @@ class DataQualityValidator:
 
     def expect_column_unique(self, df, col, dataset):
         dup_count = df[col].duplicated().sum()
-        return self._record(
-            "unique", dataset, col, dup_count == 0, f"duplicate_count={dup_count}"
-        )
+        return self._record("unique", dataset, col, dup_count == 0, f"duplicate_count={dup_count}")
 
     def expect_column_between(self, df, col, dataset, min_val=None, max_val=None):
         series = df[col].dropna()
@@ -131,22 +127,17 @@ class DataQualityValidator:
             child_name,
             fk_col,
             len(orphans) == 0,
-            f"orphaned_keys={len(orphans)} in {child_name}.{fk_col} "
-            f"not in {parent_name}.{pk_col}",
+            f"orphaned_keys={len(orphans)} in {child_name}.{fk_col} not in {parent_name}.{pk_col}",
         )
 
-    def expect_business_rule(
-        self, df, expression, dataset, rule_name, max_violations=0
-    ):
+    def expect_business_rule(self, df, expression, dataset, rule_name, max_violations=0):
         try:
             violations = df.query(f"not ({expression})")
             passed = len(violations) <= max_violations
             detail = f"violations={len(violations)} (threshold={max_violations})"
         except Exception as e:
             passed, detail = False, f"evaluation_error={e}"
-        return self._record(
-            f"business_rule:{rule_name}", dataset, "multiple", passed, detail
-        )
+        return self._record(f"business_rule:{rule_name}", dataset, "multiple", passed, detail)
 
     def get_summary(self) -> pd.DataFrame:
         return pd.DataFrame(
@@ -171,9 +162,7 @@ class DataQualityValidator:
         passed = int(df["passed"].sum())
         failed = total - passed
         print(f"\n{'=' * 60}")
-        print(
-            f"DATA QUALITY REPORT — {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}"
-        )
+        print(f"DATA QUALITY REPORT — {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
         print(f"{'=' * 60}")
         print(f"Total checks : {total}")
         print(f"Passed       : {passed} ({passed / total * 100:.1f}%)")
@@ -182,9 +171,7 @@ class DataQualityValidator:
         if failed > 0:
             print("\nFailed Checks:")
             for _, row in df[~df["passed"]].iterrows():
-                print(
-                    f"  ❌ [{row['dataset']}] {row['column']}: {row['rule']} — {row['detail']}"
-                )
+                print(f"  ❌ [{row['dataset']}] {row['column']}: {row['rule']} — {row['detail']}")
         print()
         return df
 
@@ -278,9 +265,7 @@ def run_payments_suite(v, ds):
     v.expect_column_not_null(payments, "payment_type", "payments")
     v.expect_column_not_null(payments, "payment_value", "payments")
     v.expect_column_between(payments, "payment_value", "payments", min_val=0)
-    v.expect_column_between(
-        payments, "payment_installments", "payments", min_val=0, max_val=24
-    )
+    v.expect_column_between(payments, "payment_installments", "payments", min_val=0, max_val=24)
     v.expect_column_values_in_set(
         payments,
         "payment_type",
@@ -311,9 +296,7 @@ def run_marketing_suite(v, ds):
     )  # ~60/8000 have no origin in source data
     v.expect_column_not_null(closed, "mql_id", "closed_deals")
     v.expect_column_not_null(closed, "seller_id", "closed_deals")
-    v.expect_referential_integrity(
-        closed, "mql_id", mql, "mql_id", "closed_deals", "mql"
-    )
+    v.expect_referential_integrity(closed, "mql_id", mql, "mql_id", "closed_deals", "mql")
     merged = mql.merge(closed[["mql_id", "won_date"]], on="mql_id", how="inner")
     merged["first_contact_date"] = pd.to_datetime(merged["first_contact_date"])
     merged["won_date"] = pd.to_datetime(merged["won_date"])
@@ -344,9 +327,7 @@ def run_sellers_suite(v, ds):
 # ── Main runner ───────────────────────────────────────────────────────────────
 def run_all_validations(data_dir: Path = DATA_DIR):
     """Run complete DQ validation suite and return (results_df, all_passed)."""
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s | %(levelname)-8s | %(message)s"
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)-8s | %(message)s")
 
     print(f"Loading datasets from: {data_dir}")
     ds = load_datasets(data_dir)

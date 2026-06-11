@@ -49,9 +49,9 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(PROJECT_ROOT / ".env")
 
 # ── Paths — all relative to PROJECT_ROOT, overridable via .env ───────────────
-DATA_DIR       = Path(os.getenv("DATA_DIR", str(PROJECT_ROOT / "data" / "raw")))
-LOG_DIR        = PROJECT_ROOT / "logs"
-BQ_PROJECT     = os.getenv("GCP_PROJECT_ID", "")
+DATA_DIR = Path(os.getenv("DATA_DIR", str(PROJECT_ROOT / "data" / "raw")))
+LOG_DIR = PROJECT_ROOT / "logs"
+BQ_PROJECT = os.getenv("GCP_PROJECT_ID", "")
 BQ_DATASET_RAW = "olist_raw"
 
 # ── Logging setup ─────────────────────────────────────────────────────────────
@@ -172,9 +172,7 @@ def validate_schema(df: pd.DataFrame, config: Dict, dataset_name: str) -> List[s
 
     missing_cols = [c for c in config["required_cols"] if c not in df.columns]
     if missing_cols:
-        raise SchemaValidationError(
-            f"[{dataset_name}] Missing required columns: {missing_cols}"
-        )
+        raise SchemaValidationError(f"[{dataset_name}] Missing required columns: {missing_cols}")
 
     if df.empty:
         raise SchemaValidationError(f"[{dataset_name}] DataFrame is empty")
@@ -188,7 +186,7 @@ def validate_schema(df: pd.DataFrame, config: Dict, dataset_name: str) -> List[s
     for col in config["required_cols"]:
         null_rate = df[col].isna().mean()
         if null_rate > 0.05:
-            issues.append(f"[{dataset_name}] Column '{col}' has {null_rate*100:.1f}% nulls")
+            issues.append(f"[{dataset_name}] Column '{col}' has {null_rate * 100:.1f}% nulls")
 
     return issues
 
@@ -200,13 +198,12 @@ def load_csv(file_path: Path, config: Dict, dataset_name: str) -> pd.DataFrame:
 
     if not file_path.exists():
         raise FileNotFoundError(
-            f"Data file not found: {file_path}\n"
-            f"Ensure CSV files are placed in: {DATA_DIR}/"
+            f"Data file not found: {file_path}\nEnsure CSV files are placed in: {DATA_DIR}/"
         )
 
     df = pd.read_csv(file_path, parse_dates=config.get("parse_dates", []), low_memory=False)
-    df["_ingested_at"]   = datetime.now(timezone.utc)
-    df["_source_file"]   = file_path.name
+    df["_ingested_at"] = datetime.now(timezone.utc)
+    df["_source_file"] = file_path.name
 
     logger.info("  Loaded %d rows × %d cols", len(df), len(df.columns))
     return df
@@ -220,15 +217,16 @@ class BigQueryLoader:
     """
 
     def __init__(self, project: str, dataset: str, dry_run: bool = False):
-        self.project  = project
-        self.dataset  = dataset
-        self.dry_run  = dry_run
+        self.project = project
+        self.dataset = dataset
+        self.dry_run = dry_run
         self._load_log: List[Dict] = []
         self._sim_dir = PROJECT_ROOT / "data" / "warehouse_sim"
 
         try:
             from google.cloud import bigquery as bq
-            self.bq     = bq
+
+            self.bq = bq
             self.client = bq.Client(project=project)
             self._bq_ok = True
             logger.info("BigQuery client initialised for project: %s", project)
@@ -237,8 +235,9 @@ class BigQueryLoader:
             self.client = None
             logger.warning("BigQuery not available (%s) — simulation mode active", e)
 
-    def load_table(self, df: pd.DataFrame, table_name: str,
-                   write_disposition: str = "WRITE_TRUNCATE") -> Dict:
+    def load_table(
+        self, df: pd.DataFrame, table_name: str, write_disposition: str = "WRITE_TRUNCATE"
+    ) -> Dict:
         full_table = f"{self.project}.{self.dataset}.{table_name}"
         start = time.time()
 
@@ -259,19 +258,28 @@ class BigQueryLoader:
                         df[col] = df[col].map(lambda x: str(x) if isinstance(x, bool) else x)
                 else:
                     df[col] = df[col].astype(str).where(df[col].notna(), other=None)
-            job_config = self.bq.LoadJobConfig(
-                write_disposition=write_disposition, autodetect=True)
+            job_config = self.bq.LoadJobConfig(write_disposition=write_disposition, autodetect=True)
             job = self.client.load_table_from_dataframe(df, full_table, job_config=job_config)
             job.result()
-            result = {"table": full_table, "rows": job.output_rows, "status": "success",
-                      "elapsed_s": round(time.time() - start, 2)}
-            logger.info("  ✅ Loaded %d rows → %s (%.1fs)", result["rows"], full_table, result["elapsed_s"])
+            result = {
+                "table": full_table,
+                "rows": job.output_rows,
+                "status": "success",
+                "elapsed_s": round(time.time() - start, 2),
+            }
+            logger.info(
+                "  ✅ Loaded %d rows → %s (%.1fs)", result["rows"], full_table, result["elapsed_s"]
+            )
         else:
             # Simulation: save as parquet locally
             self._sim_dir.mkdir(parents=True, exist_ok=True)
             df.to_parquet(self._sim_dir / f"{table_name}.parquet", index=False)
-            result = {"table": full_table, "rows": len(df), "status": "simulated",
-                      "local_path": str(self._sim_dir / f"{table_name}.parquet")}
+            result = {
+                "table": full_table,
+                "rows": len(df),
+                "status": "simulated",
+                "local_path": str(self._sim_dir / f"{table_name}.parquet"),
+            }
             logger.info("  [SIM] Saved %d rows → %s", len(df), result["local_path"])
 
         self._load_log.append(result)
@@ -297,18 +305,18 @@ def run_ingestion(
     logger.info("  Dry run:   %s", dry_run)
     logger.info("=" * 60)
 
-    loader          = BigQueryLoader(BQ_PROJECT, BQ_DATASET_RAW, dry_run=dry_run)
+    loader = BigQueryLoader(BQ_PROJECT, BQ_DATASET_RAW, dry_run=dry_run)
     datasets_to_run = datasets or list(DATASET_CONFIG.keys())
     all_warnings: List[str] = []
-    failed:       List[str] = []
-    succeeded:    List[str] = []
+    failed: List[str] = []
+    succeeded: List[str] = []
 
     for ds_name in datasets_to_run:
         if ds_name not in DATASET_CONFIG:
             logger.warning("Unknown dataset '%s', skipping", ds_name)
             continue
 
-        config    = DATASET_CONFIG[ds_name]
+        config = DATASET_CONFIG[ds_name]
         file_path = data_dir / config["file"]
 
         try:
@@ -318,7 +326,11 @@ def run_ingestion(
             for w in warnings_list:
                 logger.warning(w)
 
-            write_disp = "WRITE_APPEND" if (incremental and config.get("incremental_col")) else "WRITE_TRUNCATE"
+            write_disp = (
+                "WRITE_APPEND"
+                if (incremental and config.get("incremental_col"))
+                else "WRITE_TRUNCATE"
+            )
             loader.load_table(df, config["table"], write_disposition=write_disp)
             succeeded.append(ds_name)
 
@@ -334,7 +346,8 @@ def run_ingestion(
 
     summary = {
         "run_at": datetime.now(timezone.utc).isoformat(),
-        "succeeded": succeeded, "failed": failed,
+        "succeeded": succeeded,
+        "failed": failed,
         "warnings": all_warnings,
         "load_log": loader.get_load_summary().to_dict("records") if succeeded else [],
     }
@@ -355,14 +368,16 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Olist Data Ingestion Pipeline")
-    parser.add_argument("--data-dir",    default=str(DATA_DIR),
-                        help="Raw data directory (default: data/raw/)")
-    parser.add_argument("--datasets",    nargs="*",
-                        help="Specific datasets to ingest (default: all)")
-    parser.add_argument("--incremental", action="store_true",
-                        help="Incremental mode — append new rows only")
-    parser.add_argument("--dry-run",     action="store_true",
-                        help="Validate and log without writing to BigQuery")
+    parser.add_argument(
+        "--data-dir", default=str(DATA_DIR), help="Raw data directory (default: data/raw/)"
+    )
+    parser.add_argument("--datasets", nargs="*", help="Specific datasets to ingest (default: all)")
+    parser.add_argument(
+        "--incremental", action="store_true", help="Incremental mode — append new rows only"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Validate and log without writing to BigQuery"
+    )
     args = parser.parse_args()
 
     result = run_ingestion(

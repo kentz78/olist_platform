@@ -107,9 +107,7 @@ for stmt in statements:
         # The table already exists from a prior run so downstream dbt can proceed.
         is_quota = "quotaExceeded" in str(exc) or "Quota exceeded" in str(exc)
         if is_quota:
-            print(
-                f"  ⚠️  {kind} {label:<35} QUOTA WARNING (table retained): {short_err[:80]}"
-            )
+            print(f"  ⚠️  {kind} {label:<35} QUOTA WARNING (table retained): {short_err[:80]}")
             quota_warnings += 1
         else:
             print(f"  ❌ {kind} {label:<35} {short_err}")

@@ -89,9 +89,7 @@ def bq_datasets_ready(context: AssetExecutionContext) -> Output[None]:
     )
 
 
-def _run_dq(
-    script: str, context: AssetExecutionContext, timeout: int = 900
-) -> tuple[int, str]:
+def _run_dq(script: str, context: AssetExecutionContext, timeout: int = 900) -> tuple[int, str]:
     """Run a DQ script and return (returncode, stdout)."""
     result = subprocess.run(
         ["python", script],
@@ -150,9 +148,7 @@ def dq_core_validation(context: AssetExecutionContext) -> Output[None]:
     """
     returncode, stdout = _run_dq("data_quality/dq_validation.py", context, timeout=900)
     metadata = _parse_core_summary(stdout)
-    metadata["log_tail"] = MetadataValue.text(
-        stdout[-2000:] if stdout else "(no output)"
-    )
+    metadata["log_tail"] = MetadataValue.text(stdout[-2000:] if stdout else "(no output)")
     if returncode != 0:
         failed = metadata.get("checks_failed", MetadataValue.int(0))
         raise Failure(
@@ -197,9 +193,7 @@ def dq_geo_validation(context: AssetExecutionContext) -> Output[None]:
     returncode, stdout = _run_dq("data_quality/dq_geolocation.py", context, timeout=600)
 
     # Parse pass rate from JSON summary line if present
-    metadata: dict = {
-        "log_tail": MetadataValue.text(stdout[-2000:] if stdout else "(no output)")
-    }
+    metadata: dict = {"log_tail": MetadataValue.text(stdout[-2000:] if stdout else "(no output)")}
     m = re.search(r'"pass_rate":\s*([\d.]+)', stdout)
     if m:
         metadata["pass_rate_pct"] = MetadataValue.float(float(m.group(1)))

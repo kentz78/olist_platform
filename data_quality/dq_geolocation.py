@@ -158,11 +158,7 @@ class GeoQualityChecker:
         )
 
     def check_zip_parseable(self):
-        n = (
-            pd.to_numeric(self.df["geolocation_zip_code_prefix"], errors="coerce")
-            .isna()
-            .sum()
-        )
+        n = pd.to_numeric(self.df["geolocation_zip_code_prefix"], errors="coerce").isna().sum()
         self._result(
             "Schema",
             "Zip code prefix is numeric-parseable",
@@ -231,9 +227,7 @@ class GeoQualityChecker:
 
     # ── Coordinate validity ───────────────────────────────────────────────────
     def check_lat_range_global(self):
-        out = (
-            (self.df["geolocation_lat"] < -90) | (self.df["geolocation_lat"] > 90)
-        ).sum()
+        out = ((self.df["geolocation_lat"] < -90) | (self.df["geolocation_lat"] > 90)).sum()
         self._result(
             "Coordinate",
             "Latitude within global range [-90,90]",
@@ -244,9 +238,7 @@ class GeoQualityChecker:
         )
 
     def check_lng_range_global(self):
-        out = (
-            (self.df["geolocation_lng"] < -180) | (self.df["geolocation_lng"] > 180)
-        ).sum()
+        out = ((self.df["geolocation_lng"] < -180) | (self.df["geolocation_lng"] > 180)).sum()
         self._result(
             "Coordinate",
             "Longitude within global range [-180,180]",
@@ -289,9 +281,7 @@ class GeoQualityChecker:
         )
 
     def check_zero_coordinates(self):
-        z = (
-            (self.df["geolocation_lat"] == 0) & (self.df["geolocation_lng"] == 0)
-        ).sum()
+        z = ((self.df["geolocation_lat"] == 0) & (self.df["geolocation_lng"] == 0)).sum()
         self._result(
             "Coordinate",
             "No (0,0) null-island coordinates",
@@ -330,10 +320,7 @@ class GeoQualityChecker:
     # ── Referential integrity ─────────────────────────────────────────────────
     def check_valid_state_codes(self):
         inv = (
-            ~self.df["geolocation_state"]
-            .str.upper()
-            .str.strip()
-            .isin(VALID_STATES | {""})
+            ~self.df["geolocation_state"].str.upper().str.strip().isin(VALID_STATES | {""})
         ).sum()
         self._result(
             "ReferentialIntegrity",
@@ -383,9 +370,7 @@ class GeoQualityChecker:
             .dropna()
             .astype(int)
         )
-        cust_zips = set(
-            pd.to_numeric(self.customer_zips, errors="coerce").dropna().astype(int)
-        )
+        cust_zips = set(pd.to_numeric(self.customer_zips, errors="coerce").dropna().astype(int))
         missing = cust_zips - geo_zips
         pct = len(missing) / len(cust_zips) * 100 if cust_zips else 0
         self._result(
@@ -472,9 +457,7 @@ class GeoQualityChecker:
     # ── Statistical outliers ──────────────────────────────────────────────────
     def check_lat_iqr_outliers(self):
         q1, q3 = self.df["geolocation_lat"].quantile([0.01, 0.99])
-        out = (
-            (self.df["geolocation_lat"] < q1) | (self.df["geolocation_lat"] > q3)
-        ).sum()
+        out = ((self.df["geolocation_lat"] < q1) | (self.df["geolocation_lat"] > q3)).sum()
         pct = out / len(self.df) * 100
         self._result(
             "StatisticalOutlier",
@@ -487,9 +470,7 @@ class GeoQualityChecker:
 
     def check_lng_iqr_outliers(self):
         q1, q3 = self.df["geolocation_lng"].quantile([0.01, 0.99])
-        out = (
-            (self.df["geolocation_lng"] < q1) | (self.df["geolocation_lng"] > q3)
-        ).sum()
+        out = ((self.df["geolocation_lng"] < q1) | (self.df["geolocation_lng"] > q3)).sum()
         pct = out / len(self.df) * 100
         self._result(
             "StatisticalOutlier",
@@ -600,9 +581,7 @@ class GeoQualityChecker:
 if __name__ == "__main__":
     import argparse
 
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
     parser = argparse.ArgumentParser(description="Olist Geolocation DQ Checker")
     parser.add_argument(

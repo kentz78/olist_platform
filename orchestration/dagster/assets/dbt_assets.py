@@ -136,9 +136,7 @@ def star_schema_build(context: AssetExecutionContext) -> Output[None]:
         metadata={
             "drops_executed": MetadataValue.int(drops),
             "creates_executed": MetadataValue.int(creates),
-            "sql_file": MetadataValue.path(
-                str(PROJECT_ROOT / "warehouse" / "schema.sql")
-            ),
+            "sql_file": MetadataValue.path(str(PROJECT_ROOT / "warehouse" / "schema.sql")),
         },
     )
 
@@ -242,8 +240,6 @@ def dbt_tests(context: AssetExecutionContext, dbt: DbtCliResource) -> Output[Non
         metadata={
             "test_count": MetadataValue.int(181),
             "singular_tests": MetadataValue.int(6),
-            "test_path": MetadataValue.path(
-                str(PROJECT_ROOT / "dbt_project" / "tests")
-            ),
+            "test_path": MetadataValue.path(str(PROJECT_ROOT / "dbt_project" / "tests")),
         },
     )
