@@ -35,12 +35,13 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", message=".*tight_layout.*")
 
-import pandas as pd
+from datetime import timedelta
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+import pandas as pd
 import seaborn as sns
-from pathlib import Path
-from datetime import timedelta
 from dotenv import load_dotenv
 
 # ── Resolve project root and load .env ───────────────────────────────────────
@@ -286,7 +287,7 @@ bars = ax.barh(
     ch_stats["conversion_rate"],
     color=["#E94F37" if v < 5 else "#1C7293" for v in ch_stats["conversion_rate"]],
 )
-for bar, val in zip(bars, ch_stats["conversion_rate"]):
+for bar, val in zip(bars, ch_stats["conversion_rate"], strict=False):
     ax.text(
         bar.get_width() + 0.1,
         bar.get_y() + bar.get_height() / 2,
@@ -331,7 +332,7 @@ cat_rev = cat_rev.nlargest(12, "revenue").sort_values("revenue", ascending=True)
 
 fig, ax = plt.subplots(figsize=(12, 7))
 ax.barh(cat_rev["cat"], cat_rev["revenue"] / 1e6, color="#065A82", alpha=0.85)
-for i, (rev, n) in enumerate(zip(cat_rev["revenue"], cat_rev["orders"])):
+for i, (rev, n) in enumerate(zip(cat_rev["revenue"], cat_rev["orders"], strict=False)):
     ax.text(
         rev / 1e6 + 0.01,
         i,

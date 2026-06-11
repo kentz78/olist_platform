@@ -17,6 +17,7 @@ from dagster import (
     Output,
     asset,
 )
+
 from .dbt_assets import dbt_tests
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]

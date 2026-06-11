@@ -12,13 +12,13 @@ Exit codes:
   1  user aborted, or unrecoverable error
 """
 
+import os
 import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
-from google.cloud import bigquery
 from google.api_core.exceptions import NotFound
-import os
+from google.cloud import bigquery
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 

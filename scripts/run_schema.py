@@ -4,6 +4,7 @@ Execute warehouse/schema.sql against BigQuery and print one summary line per
 statement — no SQL echo, no wall of text.
 """
 
+import os
 import re
 import sys
 import time
@@ -11,7 +12,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from google.cloud import bigquery
-import os
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 

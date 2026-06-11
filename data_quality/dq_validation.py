@@ -29,9 +29,8 @@ Environment variables (set in .env at project root)
 import logging
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, List
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -58,7 +57,7 @@ class ValidationResult:
         self.column = column
         self.passed = passed
         self.detail = detail
-        self.timestamp = datetime.now(timezone.utc)
+        self.timestamp = datetime.now(UTC)
 
     def __str__(self):
         status = "✅ PASS" if self.passed else "❌ FAIL"
@@ -68,7 +67,7 @@ class ValidationResult:
 # ── Validator class ───────────────────────────────────────────────────────────
 class DataQualityValidator:
     def __init__(self):
-        self.results: List[ValidationResult] = []
+        self.results: list[ValidationResult] = []
 
     def _record(self, rule, dataset, column, passed, detail=""):
         r = ValidationResult(rule, dataset, column, passed, detail)
@@ -162,7 +161,7 @@ class DataQualityValidator:
         passed = int(df["passed"].sum())
         failed = total - passed
         print(f"\n{'=' * 60}")
-        print(f"DATA QUALITY REPORT — {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
+        print(f"DATA QUALITY REPORT — {datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')}")
         print(f"{'=' * 60}")
         print(f"Total checks : {total}")
         print(f"Passed       : {passed} ({passed / total * 100:.1f}%)")
@@ -177,7 +176,7 @@ class DataQualityValidator:
 
 
 # ── Rule suites ───────────────────────────────────────────────────────────────
-def load_datasets(data_dir: Path) -> Dict[str, pd.DataFrame]:
+def load_datasets(data_dir: Path) -> dict[str, pd.DataFrame]:
     """Load all raw datasets for validation."""
     files = {
         "orders": "olist_orders_dataset.csv",

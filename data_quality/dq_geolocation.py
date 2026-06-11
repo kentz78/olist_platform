@@ -24,9 +24,8 @@ import logging
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -80,8 +79,8 @@ class GeoQualityChecker:
     def __init__(
         self,
         df: pd.DataFrame,
-        df_deduped: Optional[pd.DataFrame] = None,
-        customer_zips: Optional[pd.Series] = None,
+        df_deduped: pd.DataFrame | None = None,
+        customer_zips: pd.Series | None = None,
     ):
         self.df = df.copy()
         self.df_deduped = df_deduped
@@ -553,7 +552,7 @@ class GeoQualityChecker:
 
         summary = {
             "dataset": "olist_geolocation",
-            "run_at": datetime.now(timezone.utc).isoformat(),
+            "run_at": datetime.now(UTC).isoformat(),
             "total_checks": total,
             "passed": passed,
             "warned": warned,

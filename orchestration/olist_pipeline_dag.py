@@ -226,5 +226,5 @@ with DAG(
     ] >> marts_gate
     marts_gate >> dbt_test
     dbt_test >> [run_analysis, archive_gcs]
-    [run_analysis, archive_gcs] >> [notify_ok, notify_fail]
+    [run_analysis, archive_gcs] >> [notify_ok, notify_fail]  # noqa: B018
     [notify_ok, notify_fail] >> end

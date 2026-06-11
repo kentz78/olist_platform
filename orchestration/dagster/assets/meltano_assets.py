@@ -24,9 +24,9 @@ from dagster import (
     Output,
     asset,
 )
-from .dq_assets import dq_core_validation, dq_geo_validation
-
 from dotenv import load_dotenv
+
+from .dq_assets import dq_core_validation, dq_geo_validation
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 load_dotenv(PROJECT_ROOT / ".env", override=False)

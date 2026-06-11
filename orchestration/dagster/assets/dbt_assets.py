@@ -43,8 +43,6 @@ import re
 import subprocess
 from pathlib import Path
 
-from dotenv import load_dotenv
-
 from dagster import (
     AssetExecutionContext,
     Failure,
@@ -53,6 +51,8 @@ from dagster import (
     asset,
 )
 from dagster_dbt import DbtCliResource
+from dotenv import load_dotenv
+
 from .meltano_assets import meltano_core_extract_load, meltano_geo_extract_load
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]

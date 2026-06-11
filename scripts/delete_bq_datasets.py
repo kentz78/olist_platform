@@ -5,12 +5,12 @@ Delete all four Olist BigQuery datasets and every table inside them.
 Requires typing YES at the confirmation prompt — prevents accidental data loss.
 """
 
+import os
 import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
 from google.cloud import bigquery
-import os
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
