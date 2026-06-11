@@ -3,131 +3,1305 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pipeline Architecture — Olist Analytics Platform</title>
+<title>Olist Platform — Pipeline Architecture</title>
 <style>
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS  (identical to dashboard/index.html)
+═══════════════════════════════════════════════════════════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --navy:  #1F3864;
-  --steel: #2E75B6;
-  --teal:  #065A82;
-  --bg:    #F4F6F9;
-  --panel: #FFFFFF;
-  --text:  #1A1A2E;
-  --muted: #64748B;
-  --border:#E2E8F0;
+  --navy:   #1F3864;
+  --steel:  #2E75B6;
+  --teal:   #065A82;
+  --sky:    #4EAFD1;
+  --ltblue: #EBF3FB;
+  --green:  #1A5E3A;
+  --ltgreen:#E8F5E9;
+  --amber:  #7D4E00;
+  --ltamber:#FFF8E1;
+  --red:    #8B2500;
+  --ltred:  #FFEBEE;
+  --bg:     #F4F6F9;
+  --panel:  #FFFFFF;
+  --text:   #1A1A2E;
+  --muted:  #64748B;
+  --border: #E2E8F0;
+  --shadow: 0 2px 12px rgba(0,0,0,.08);
+  --radius: 12px;
+  --sw:     242px;
 }
-html { font-size: 15px; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+html { font-size: 15px; scroll-behavior: smooth; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+}
 
-/* ── Header (matches dashboard/index.html) ── */
-.header {
+/* ═══════════════════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════════════════ */
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--sw);
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  box-shadow: 2px 0 8px rgba(0,0,0,.06);
+  display: flex; flex-direction: column;
+  z-index: 200;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.nav-brand {
+  flex-shrink: 0;
   background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%);
-  padding: 0 32px; height: 64px;
-  display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; z-index: 100;
-  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  padding: 20px 18px;
+  color: #fff;
 }
-.header-brand { display: flex; align-items: center; gap: 12px; }
-.header-icon {
-  width: 36px; height: 36px; border-radius: 8px;
-  background: rgba(255,255,255,.2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 800; color: #fff;
+.nav-brand-tag {
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  opacity: .75;
+  margin-bottom: 5px;
 }
-.header-title { font-size: 1.05rem; font-weight: 700; color: #fff; }
-.header-sub   { font-size: 0.75rem; color: rgba(255,255,255,.65); }
-.header-back {
-  font-size: 0.85rem; color: rgba(255,255,255,.85);
-  text-decoration: none; display: flex; align-items: center; gap: 6px;
-  padding: 6px 14px; border-radius: 6px;
-  border: 1px solid rgba(255,255,255,.3);
-  transition: background .15s;
+.nav-brand-title {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 2px;
 }
-.header-back:hover { background: rgba(255,255,255,.12); color: #fff; }
+.nav-brand-sub { font-size: 0.75rem; opacity: .65; }
 
-/* ── Main content ── */
-.main {
-  flex: 1; display: flex; align-items: center; justify-content: center;
-  padding: 48px 24px;
+.nav-list { flex: 1; padding: 8px 0 12px; }
+
+.nav-group {
+  padding: 14px 16px 4px;
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
 }
-.card {
-  background: var(--panel); border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,.08);
-  padding: 48px 56px; max-width: 560px; width: 100%;
-  text-align: center;
+
+.nav-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 14px 8px 16px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background .15s, border-color .15s, color .15s;
+  user-select: none;
 }
-.card-icon {
-  width: 64px; height: 64px; border-radius: 16px;
-  background: linear-gradient(135deg, var(--navy), var(--steel));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 28px; margin: 0 auto 24px;
+.nav-item:hover { background: var(--ltblue); }
+.nav-item.active {
+  background: var(--ltblue);
+  border-left-color: var(--steel);
 }
-.card h1 { font-size: 1.5rem; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
-.card p  { font-size: 1rem; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
-.card-tags { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 32px; }
-.tag {
-  font-size: 0.72rem; font-weight: 600; padding: 4px 10px; border-radius: 4px;
-  background: #EBF3FB; color: var(--steel);
-  font-family: 'Courier New', monospace; letter-spacing: .04em;
-}
-.btn {
-  display: inline-block; padding: 12px 28px;
-  background: linear-gradient(135deg, var(--navy), var(--steel));
-  color: #fff; border-radius: 8px;
-  text-decoration: none; font-weight: 600; font-size: 0.95rem;
-  transition: opacity .15s;
-}
-.btn:hover { opacity: .88; }
-.note {
-  margin-top: 20px; font-size: 0.8rem; color: var(--muted);
+.nav-num {
+  flex-shrink: 0; width: 20px;
+  font-size: 0.73rem;
   font-family: 'Courier New', monospace;
+  color: var(--muted);
+  padding-top: 2px; text-align: right;
 }
+.nav-item.active .nav-num { color: var(--steel); }
+.nav-label { font-size: 0.83rem; color: var(--muted); line-height: 1.35; }
+.nav-item.active .nav-label { color: var(--steel); font-weight: 600; }
+.nav-item:hover:not(.active) .nav-label { color: var(--navy); }
 
-/* ── Footer ── */
-footer {
-  text-align: center; padding: 18px;
-  font-size: 0.78rem; color: var(--muted);
+.nav-foot {
+  flex-shrink: 0;
+  padding: 12px 16px;
   border-top: 1px solid var(--border);
 }
+.nav-prog {
+  height: 4px; background: var(--border);
+  border-radius: 2px; margin-bottom: 8px; overflow: hidden;
+}
+.nav-fill {
+  height: 100%; background: var(--steel);
+  border-radius: 2px; transition: width .4s ease; width: 10%;
+}
+.nav-count { font-size: 0.73rem; color: var(--muted); font-family: 'Courier New', monospace; }
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN & SLIDES
+═══════════════════════════════════════════════════════════ */
+.main {
+  margin-left: var(--sw);
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity .32s ease, transform .32s ease;
+  pointer-events: none;
+}
+.slide.active {
+  opacity: 1; transform: translateY(0);
+  pointer-events: all; z-index: 10;
+}
+.slide.exit {
+  opacity: 0; transform: translateY(-10px); z-index: 5;
+}
+
+/* Top bar */
+.bar {
+  height: 4px;
+  background: linear-gradient(90deg, var(--navy) 0%, var(--steel) 60%, var(--sky) 100%);
+  flex-shrink: 0;
+}
+
+/* Slide header — white card */
+.hd {
+  flex-shrink: 0;
+  background: var(--panel);
+  padding: 22px 48px 18px;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+.hd-tag {
+  font-size: 0.73rem; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--steel); margin-bottom: 7px;
+  font-family: 'Courier New', monospace;
+}
+.hd-title { font-size: 1.75rem; font-weight: 700; color: var(--navy); line-height: 1.15; }
+.hd-sub   { font-size: 1rem; color: var(--muted); margin-top: 5px; line-height: 1.5; }
+
+/* Slide content area */
+.bd {
+  flex: 1;
+  padding: 24px 48px 20px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TYPOGRAPHY
+═══════════════════════════════════════════════════════════ */
+p  { font-size: 1rem; line-height: 1.65; color: var(--text); }
+ul, ol { padding-left: 20px; }
+li { font-size: 1rem; line-height: 1.7; color: var(--muted); }
+li strong { color: var(--text); }
+strong { color: var(--text); }
+h3 { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin: 18px 0 10px; }
+h4 {
+  font-size: 0.8rem; font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--navy); margin-bottom: 10px;
+}
+code {
+  font-family: 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.86rem;
+  background: var(--ltblue); padding: 1px 6px;
+  border-radius: 3px; color: var(--navy);
+  border: 1px solid #C5DDF4;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CODE BLOCKS
+═══════════════════════════════════════════════════════════ */
+pre {
+  background: #F0F6FF;
+  border: 1px solid #C5DDF4;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.85rem; line-height: 1.7;
+  color: var(--navy);
+  overflow-x: auto; margin: 12px 0;
+}
+pre code { background: none; border: none; padding: 0; font-size: inherit; }
+.kw  { color: #1c6fa3; font-weight: 600; }
+.cm  { color: var(--muted); font-style: italic; }
+.str { color: #1A5E3A; }
+.fn  { color: var(--navy); }
+.op  { color: var(--red); }
+
+/* ═══════════════════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════════════════ */
+.two-col   { display: grid; grid-template-columns: 1fr 1fr;     gap: 16px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+/* ═══════════════════════════════════════════════════════════
+   KPI / STAT CARDS  (matches dashboard .kpi-card)
+═══════════════════════════════════════════════════════════ */
+.stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.stat {
+  background: var(--panel); border-radius: var(--radius);
+  padding: 12px 20px; box-shadow: var(--shadow);
+  border-top: 4px solid var(--steel);
+}
+.stat-v { font-size: 1.4rem; font-weight: 700; color: var(--navy); line-height: 1; font-family: 'Courier New', monospace; }
+.stat-l { font-size: 0.73rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .05em; }
+
+/* ═══════════════════════════════════════════════════════════
+   PANEL CARDS  (matches dashboard .chart-panel)
+═══════════════════════════════════════════════════════════ */
+.panel {
+  background: var(--panel); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.panel-hd {
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-hd h4 { font-size: 0.9rem; font-weight: 600; color: var(--navy); margin: 0 0 2px; text-transform: none; letter-spacing: 0; }
+.panel-hd p  { font-size: 0.8rem; color: var(--muted); margin: 0; }
+.panel-body  { padding: 16px 18px; }
+.panel-body ul { list-style: none; padding: 0; }
+.panel-body li { font-size: 1rem; padding: 4px 0; border-bottom: 1px solid #F1F5F9; color: var(--muted); }
+.panel-body li:last-child { border: none; }
+
+/* ═══════════════════════════════════════════════════════════
+   INSIGHT / CALLOUT CARDS  (matches dashboard .insight-card)
+═══════════════════════════════════════════════════════════ */
+.insight {
+  border-radius: var(--radius); padding: 14px 16px;
+  border-left: 4px solid var(--steel);
+  background: var(--ltblue);
+}
+.insight.green { border-left-color: #16A34A; background: var(--ltgreen); }
+.insight.amber { border-left-color: #D97706; background: var(--ltamber); }
+.insight.red   { border-left-color: #DC2626; background: var(--ltred); }
+.insight h4 { font-size: 0.85rem; font-weight: 700; color: var(--navy); margin-bottom: 5px; text-transform: none; letter-spacing: 0; }
+.insight p  { font-size: 1rem; color: var(--text); line-height: 1.6; }
+
+.insight-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 16px 0; }
+
+/* ═══════════════════════════════════════════════════════════
+   PIPELINE STEP CARDS  (matches dashboard .pipeline-step)
+═══════════════════════════════════════════════════════════ */
+.steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin: 16px 0; }
+.step {
+  display: flex; flex-direction: column;
+  background: var(--panel); border-radius: 8px;
+  box-shadow: var(--shadow); padding: 14px 14px 12px;
+}
+.step-num-badge {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--steel); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.8rem; flex-shrink: 0;
+  margin-bottom: 8px;
+}
+.step-name { font-size: 0.87rem; font-weight: 700; color: var(--navy); margin-bottom: 5px; }
+.step-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.45; flex: 1; }
+.step-cmd  {
+  margin-top: 8px; font-family: 'Courier New', monospace; font-size: 0.73rem;
+  background: var(--ltblue); color: var(--navy);
+  padding: 3px 8px; border-radius: 4px;
+  border: 1px solid #C5DDF4; display: inline-block;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PIPELINE FLOW BAR
+═══════════════════════════════════════════════════════════ */
+.flow { display: flex; align-items: center; overflow-x: auto; padding: 4px 0 8px; margin: 14px 0; }
+.fnode {
+  flex-shrink: 0; background: var(--panel); border-radius: 8px;
+  box-shadow: var(--shadow); padding: 8px 14px; text-align: center; min-width: 96px;
+}
+.fnode-l { font-size: 0.67rem; color: var(--muted); margin-bottom: 2px; font-family: 'Courier New', monospace; text-transform: uppercase; letter-spacing: .05em; }
+.fnode-n { font-size: 0.8rem; font-weight: 700; color: var(--navy); }
+.farrow  { flex-shrink: 0; color: var(--muted); font-size: 18px; padding: 0 5px; }
+
+/* ═══════════════════════════════════════════════════════════
+   JOB CHAIN  (dashboard pipeline-step style)
+═══════════════════════════════════════════════════════════ */
+.jobs { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+.job {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: var(--panel); border-radius: 8px;
+  box-shadow: var(--shadow); padding: 14px 18px;
+}
+.job-n {
+  flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--steel); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.87rem; font-weight: 700;
+}
+.job-info { flex: 1; }
+.job-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+.job-sub   { font-size: 0.87rem; color: var(--muted); line-height: 1.5; }
+.job-cond  { margin-top: 5px; font-size: 0.73rem; color: var(--muted); font-family: 'Courier New', monospace; background: var(--ltblue); padding: 3px 8px; border-radius: 3px; border: 1px solid #C5DDF4; display: inline-block; margin-top: 6px; }
+
+/* ═══════════════════════════════════════════════════════════
+   CRON CARDS
+═══════════════════════════════════════════════════════════ */
+.crons { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.cron  { background: var(--panel); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; border-top: 4px solid var(--steel); }
+.cron-time { font-size: 1.9rem; font-weight: 700; color: var(--navy); line-height: 1; font-family: 'Courier New', monospace; }
+.cron-zone { font-size: 0.8rem; color: var(--muted); margin-bottom: 10px; }
+.cron-expr { font-family: 'Courier New', monospace; font-size: 0.8rem; color: var(--steel); margin-bottom: 10px; background: var(--ltblue); padding: 2px 8px; border-radius: 3px; display: inline-block; }
+.cron ul { list-style: none; padding: 0; }
+.cron li { font-size: 0.87rem; color: var(--muted); padding: 2px 0; }
+.cron li::before { content: '— '; color: var(--steel); }
+
+/* ═══════════════════════════════════════════════════════════
+   TABLE
+═══════════════════════════════════════════════════════════ */
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 12px 0; }
+th {
+  background: var(--navy); color: #fff; padding: 9px 12px;
+  text-align: left; font-size: 0.78rem; font-weight: 600; letter-spacing: .03em;
+}
+td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+tr:nth-child(even) td { background: #F8FAFC; }
+tr:hover td { background: var(--ltblue); }
+
+/* ═══════════════════════════════════════════════════════════
+   CHART TAG BADGE  (dashboard .chart-tag)
+═══════════════════════════════════════════════════════════ */
+.tag {
+  font-size: 0.67rem; font-weight: 700; letter-spacing: .05em;
+  padding: 3px 8px; border-radius: 4px;
+  background: var(--ltblue); color: var(--steel);
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DAG WRAPPER
+═══════════════════════════════════════════════════════════ */
+.dag {
+  background: #F8FAFF; border: 1px solid #C5DDF4; border-radius: var(--radius);
+  padding: 20px; overflow-x: auto; margin: 14px 0;
+  box-shadow: var(--shadow);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TITLE SLIDE
+═══════════════════════════════════════════════════════════ */
+.title-body {
+  flex: 1;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 60%, var(--sky) 100%);
+  display: flex; flex-direction: column;
+  align-items: flex-start; justify-content: center;
+  padding: 0 72px; gap: 22px; color: #fff;
+}
+.ts-ey {
+  font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase;
+  opacity: .75; font-family: 'Courier New', monospace;
+}
+.ts-h { font-size: 3.2rem; font-weight: 800; line-height: 1.1; letter-spacing: -.5px; }
+.ts-h em { opacity: .8; font-style: normal; }
+.ts-sub { font-size: 1rem; opacity: .8; max-width: 520px; line-height: 1.65; }
+.ts-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.ts-tag {
+  font-size: 0.8rem; font-weight: 600; padding: 5px 14px; border-radius: 20px;
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+  font-family: 'Courier New', monospace;
+}
+.ts-meta {
+  font-size: 0.87rem; opacity: .65;
+  font-family: 'Courier New', monospace;
+  display: flex; gap: 20px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+svg text { font-family: 'Segoe UI', system-ui, sans-serif; }
 </style>
 </head>
 <body>
 
-<header class="header">
-  <div class="header-brand">
-    <div class="header-icon">O</div>
-    <div>
-      <div class="header-title">Olist Analytics Platform</div>
-      <div class="header-sub">Pipeline Architecture</div>
+<!-- ══════════════════════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════════════════════ -->
+<nav class="sidebar">
+  <div class="nav-brand">
+    <div class="nav-brand-tag">Olist Platform</div>
+    <div class="nav-brand-title">Pipeline Architecture</div>
+    <div class="nav-brand-sub">Jun 2026 · v1.0</div>
+  </div>
+
+  <div class="nav-list">
+    <div class="nav-group">Overview</div>
+    <div class="nav-item active" onclick="goTo(0)">
+      <span class="nav-num">01</span>
+      <span class="nav-label">Title</span>
+    </div>
+
+    <div class="nav-group">§1 · Local Execution</div>
+    <div class="nav-item" onclick="goTo(1)">
+      <span class="nav-num">02</span>
+      <span class="nav-label">run_pipeline.sh</span>
+    </div>
+    <div class="nav-item" onclick="goTo(2)">
+      <span class="nav-num">03</span>
+      <span class="nav-label">7 Pipeline Steps</span>
+    </div>
+
+    <div class="nav-group">§2 · Dagster</div>
+    <div class="nav-item" onclick="goTo(3)">
+      <span class="nav-num">04</span>
+      <span class="nav-label">Asset Graph Overview</span>
+    </div>
+    <div class="nav-item" onclick="goTo(4)">
+      <span class="nav-num">05</span>
+      <span class="nav-label">Asset DAG</span>
+    </div>
+    <div class="nav-item" onclick="goTo(5)">
+      <span class="nav-num">06</span>
+      <span class="nav-label">Jobs &amp; Schedule</span>
+    </div>
+
+    <div class="nav-group">§3 · GitHub Actions</div>
+    <div class="nav-item" onclick="goTo(6)">
+      <span class="nav-num">07</span>
+      <span class="nav-label">GHA Overview</span>
+    </div>
+    <div class="nav-item" onclick="goTo(7)">
+      <span class="nav-num">08</span>
+      <span class="nav-label">5-Job Chain</span>
+    </div>
+    <div class="nav-item" onclick="goTo(8)">
+      <span class="nav-num">09</span>
+      <span class="nav-label">Conditions &amp; Notify</span>
+    </div>
+
+    <div class="nav-group">Summary</div>
+    <div class="nav-item" onclick="goTo(9)">
+      <span class="nav-num">10</span>
+      <span class="nav-label">Three Layers</span>
     </div>
   </div>
-  <a href="index.html" class="header-back">← Dashboard</a>
-</header>
 
-<main class="main">
-  <div class="card">
-    <div class="card-icon">⚙</div>
-    <h1>Pipeline Architecture</h1>
-    <p>
-      A 10-slide walkthrough of the three orchestration layers —
-      local bash pipeline, Dagster asset graph, and GitHub Actions CI/CD.
-    </p>
-    <div class="card-tags">
-      <span class="tag">run_pipeline.sh</span>
-      <span class="tag">Dagster</span>
-      <span class="tag">Meltano</span>
-      <span class="tag">BigQuery</span>
-      <span class="tag">dbt</span>
-      <span class="tag">GitHub Actions</span>
-    </div>
-    <a href="#" class="btn">Coming soon</a>
-    <p class="note">Full presentation will be linked here once published.</p>
+  <div class="nav-foot">
+    <div class="nav-prog"><div class="nav-fill"></div></div>
+    <div class="nav-count">1 / 10</div>
   </div>
-</main>
+</nav>
 
-<footer>
-  Olist Analytics Platform &nbsp;·&nbsp; Pipeline Architecture &nbsp;·&nbsp; Jun 2026
-</footer>
+<!-- ══════════════════════════════════════════════════════════
+     MAIN
+══════════════════════════════════════════════════════════ -->
+<div class="main">
 
+<!-- ─────────────────────────────────────────────────────────
+     SLIDE 01 — TITLE
+───────────────────────────────────────────────────────── -->
+<div class="slide active" id="s1">
+  <div class="bar"></div>
+  <div class="title-body">
+    <div class="ts-ey">Olist E-Commerce Analytics Platform</div>
+    <div class="ts-h">Pipeline<br><em>Architecture</em></div>
+    <div class="ts-sub">
+      A walkthrough of the three orchestration layers — local bash pipeline,
+      Dagster asset graph, and GitHub Actions CI/CD.
+    </div>
+    <div class="ts-tags">
+      <span class="ts-tag">run_pipeline.sh</span>
+      <span class="ts-tag">Dagster</span>
+      <span class="ts-tag">GitHub Actions</span>
+      <span class="ts-tag">BigQuery</span>
+      <span class="ts-tag">dbt</span>
+    </div>
+    <div class="ts-meta">
+      <span>10 Assets</span>
+      <span>5 GHA Jobs</span>
+      <span>7 Pipeline Steps</span>
+      <span>181+ dbt Tests</span>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────
+     SLIDE 02 — run_pipeline.sh OVERVIEW
+───────────────────────────────────────────────────────── -->
+<div class="slide" id="s2">
+  <div class="bar"></div>
+  <div class="hd">
+    <div class="hd-tag">01 · Local Execution</div>
+    <div class="hd-title">run_pipeline.sh</div>
+    <div class="hd-sub">Single-command 7-step bash orchestrator for local and ad-hoc runs</div>
+  </div>
+  <div class="bd">
+    <div class="stats">
+      <div class="stat"><div class="stat-v">7</div><div class="stat-l">Pipeline Steps</div></div>
+      <div class="stat"><div class="stat-v">set -euo</div><div class="stat-l">Fail-fast flag</div></div>
+      <div class="stat"><div class="stat-v">--incremental</div><div class="stat-l">Guard flag</div></div>
+      <div class="stat"><div class="stat-v">.env</div><div class="stat-l">Secrets sourced</div></div>
+    </div>
+
+    <pre><span class="cm">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="op">-euo</span> pipefail          <span class="cm"># exit on error · unset vars · pipe failure</span>
+
+<span class="cm"># Load GCP credentials and project config (gitignored)</span>
+<span class="kw">source</span> .env
+
+<span class="cm"># Incremental-load guard — requires explicit written confirmation</span>
+<span class="kw">if</span> [[ <span class="str">"${1:-}"</span> == <span class="str">"--incremental"</span> ]]; <span class="kw">then</span>
+  <span class="kw">read</span> <span class="op">-p</span> <span class="str">"Run incremental load? Type YES to confirm: "</span> CONFIRM
+  [[ <span class="str">"$CONFIRM"</span> == <span class="str">"YES"</span> ]] || <span class="kw">exit</span> 1
+<span class="kw">fi</span></pre>
+
+    <div class="two-col" style="gap: 14px; margin-top: 4px;">
+      <div class="insight">
+        <h4>Execution model</h4>
+        <p>Steps run sequentially. Any non-zero exit immediately aborts the entire pipeline via <code>set -euo pipefail</code>. No partial state left behind.</p>
+      </div>
+      <div class="insight green">
+        <h4>Data flow: GCS → local → BigQuery</h4>
+        <p>CSVs live in a GCS bucket. Before running locally, download them: <code>gsutil -m cp gs://$GCS_BUCKET/data/* data/</code>. Steps 3–4 ingest to <code>olist_raw</code>; step 5 builds the star schema in <code>olist_analytics</code>; step 6 writes dbt staging views + mart tables to <code>olist_analytics_staging</code> / <code>olist_analytics_marts</code>.</p>
+      </div>
+    </div>
+    <div class="two-col" style="gap: 14px; margin-top: 10px;">
+      <div class="insight amber">
+        <h4>Secrets</h4>
+        <p><code>GCP_PROJECT_ID</code>, <code>GOOGLE_APPLICATION_CREDENTIALS</code>, <code>GCS_BUCKET_NAME</code> loaded from <code>.env</code> — gitignored, never committed.</p>
+      </div>
+      <div class="insight amber">
+        <h4>--incremental flag</h4>
+        <p>Activates <code>APPEND</code> mode for core ingestion and SHA-256 hash detection for geolocation. Requires the literal string <code>YES</code> to proceed.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────
+     SLIDE 03 — 7 PIPELINE STEPS
+───────────────────────────────────────────────────────── -->
+<div class="slide" id="s3">
+  <div class="bar"></div>
+  <div class="hd">
+    <div class="hd-tag">01 · Local Execution</div>
+    <div class="hd-title">The 7 Pipeline Steps</div>
+    <div class="hd-sub">Steps 0 – 7, each wrapping a focused Python script</div>
+  </div>
+  <div class="bd">
+    <div class="steps">
+      <div class="step">
+        <div class="step-num-badge">0</div>
+        <div class="step-name">BQ Preflight</div>
+        <div class="step-desc">Verifies <code>olist_raw</code>, <code>olist_analytics_staging</code>, and <code>olist_analytics_marts</code> datasets exist before any writes.</div>
+        <span class="step-cmd">check_bq_datasets.py</span>
+      </div>
+      <div class="step">
+        <div class="step-num-badge">1</div>
+        <div class="step-name">DQ — Core</div>
+        <div class="step-desc">57+ data quality checks on all 10 core CSV files: null rates, range bounds, referential integrity, date sanity.</div>
+        <span class="step-cmd">dq_validation.py</span>
+      </div>
+      <div class="step">
+        <div class="step-num-badge">2</div>
+        <div class="step-name">DQ — Geo</div>
+        <div class="step-desc">30 checks on geolocation CSV: lat/lng bounding box (Brazil), zip code format, duplicate row detection.</div>
+        <span class="step-cmd">dq_geolocation.py</span>
+      </div>
+      <div class="step">
+        <div class="step-num-badge">3</div>
+        <div class="step-name">Ingest Core</div>
+        <div class="step-desc">Loads 10 Olist CSVs to BigQuery <code>olist_raw.*</code> using <code>WRITE_TRUNCATE</code> or <code>APPEND</code> in incremental mode.</div>
+        <span class="step-cmd">ingest_to_bigquery.py</span>
+      </div>
+      <div class="step">
+        <div class="step-num-badge">4</div>
+        <div class="step-name">Ingest Geo</div>
+        <div class="step-desc">SHA-256 hash check. 1M → 19K row deduplication via median lat/lng. Loads to <code>olist_raw.geolocation</code> and <code>DimGeography</code>.</div>
+        <span class="step-cmd">ingest_geolocation.py</span>
+      </div>
+      <div class="step">
+        <div class="step-num-badge">5</div>
+        <div class="step-name">Star Schema DDL</div>
+        <div class="step-desc">Executes <code>warehouse/schema.sql</code> — 7 dimension tables + 4 fact tables. Strips comments, runs statements sequentially.</div>
+        <span class="step-cmd">run_schema.py</span>
+      </div>
+      <div class="step">
+        <div class="step-num-badge">6</div>
+        <div class="step-name">dbt Build</div>
+        <div class="step-desc"><code>dbt deps &amp;&amp; dbt run &amp;&amp; dbt test</code> — 9 staging models, 7 mart tables, 181+ tests. Aborts immediately on any test failure.</div>
+        <span class="step-cmd">dbt_project/</span>
+      </div>
+      <div class="step">
+        <div class="step-num-badge">7</div>
+        <div class="step-name">Analytics Charts</div>
+        <div class="step-desc">Renders 8 matplotlib charts: revenue trends, CLV, geo heatmap, seller performance, funnel, payment mix, logistics, products.</div>
+        <span class="step-cmd">olist_analysis.py</span>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="fnode" style="border-top:3px solid var(--steel);"><div class="fnode-l">Source</div><div class="fnode-n">GCS Bucket</div></div>
+      <div class="farrow">→</div>
+      <div class="fnode"><div class="fnode-l">Step 0</div><div class="fnode-n">Preflight</div></div>
+      <div class="farrow">→</div>
+      <div class="fnode"><div class="fnode-l">Steps 1–2</div><div class="fnode-n">Data Quality</div></div>
+      <div class="farrow">→</div>
+      <div class="fnode"><div class="fnode-l">Steps 3–4</div><div class="fnode-n">Ingestion</div></div>
+      <div class="farrow">→</div>
+      <div class="fnode"><div class="fnode-l">Step 5</div><div class="fnode-n">Star Schema</div></div>
+      <div class="farrow">→</div>
+      <div class="fnode"><div class="fnode-l">Step 6</div><div class="fnode-n">dbt Build</div></div>
+      <div class="farrow">→</div>
+      <div class="fnode"><div class="fnode-l">Step 7</div><div class="fnode-n">Charts</div></div>
+      <div class="farrow">→</div>
+      <div class="fnode" style="border-top:3px solid var(--steel);"><div class="fnode-l">Target</div><div class="fnode-n">BigQuery</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────
+     SLIDE 04 — DAGSTER OVERVIEW
+───────────────────────────────────────────────────────── -->
+<div class="slide" id="s4">
+  <div class="bar"></div>
+  <div class="hd">
+    <div class="hd-tag">02 · Orchestration</div>
+    <div class="hd-title">Dagster Asset Graph</div>
+    <div class="hd-sub">Software-defined assets with lineage, materialisation metadata, and retry policies</div>
+  </div>
+  <div class="bd">
+    <div class="stats">
+      <div class="stat"><div class="stat-v">10</div><div class="stat-l">Assets</div></div>
+      <div class="stat"><div class="stat-v">4</div><div class="stat-l">Asset Groups</div></div>
+      <div class="stat"><div class="stat-v">3</div><div class="stat-l">Jobs</div></div>
+      <div class="stat"><div class="stat-v">1</div><div class="stat-l">Schedule</div></div>
+      <div class="stat"><div class="stat-v">181+</div><div class="stat-l">dbt Tests</div></div>
+    </div>
+
+    <div class="two-col" style="margin-top: 4px;">
+      <div>
+        <div class="panel">
+          <div class="panel-hd"><h4>Asset Groups</h4></div>
+          <div class="panel-body">
+            <ul>
+              <li><strong>data_quality</strong> — DQ validation (2 assets)</li>
+              <li><strong>ingestion</strong> — Meltano ELT layer: 10 tables → <code>olist_raw</code> + geo dedup → <code>DimGeography</code></li>
+              <li><strong>warehouse</strong> — Star schema DDL (1 asset)</li>
+              <li><strong>dbt</strong> — staging, marts, tests, charts (5 assets)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="insight" style="margin-top: 12px;">
+          <h4>Resources</h4>
+          <p><code>DbtCliResource</code> injected into all 4 dbt assets. Project root resolved via <code>Path(__file__).resolve().parents[3]</code>.</p>
+        </div>
+      </div>
+      <div>
+        <div class="panel" style="margin-bottom: 12px;">
+          <div class="panel-hd"><h4>Three Jobs</h4></div>
+          <div class="panel-body">
+            <ul>
+              <li><strong>olist_daily_pipeline</strong> — all 10 assets end-to-end</li>
+              <li><strong>olist_ingest_only</strong> — DQ + ingestion groups only</li>
+              <li><strong>olist_dbt_only</strong> — warehouse + dbt + charts</li>
+            </ul>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hd"><h4>Schedule</h4></div>
+          <div class="panel-body">
+            <ul>
+              <li><strong>olist_daily_at_0600_utc</strong></li>
+              <li>Cron: <code>0 6 * * *</code></li>
+              <li>Status: <code>STOPPED</code> — GitHub Actions is primary</li>
+              <li>Enable via Dagster UI as GHA fallback</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-top: 14px; gap: 14px;">
+      <div class="insight">
+        <h4>Meltano ELT layer</h4>
+        <p>The <code>ingestion</code> group assets are named <code>meltano_*</code> to represent the Singer/Meltano ELT design intent (tap-csv → target-bigquery). Due to <code>google-cloud-bigquery 3.x</code> API incompatibility with available <code>target-bigquery</code> variants, the assets execute Python ingestion scripts directly — preserving the conceptual ELT separation while remaining production-stable.</p>
+      </div>
+      <div class="insight green">
+        <h4>BigQuery as materialisation target</h4>
+        <p>Each asset group writes to a dedicated BigQuery dataset: <code>ingestion</code> → <code>olist_raw</code> · <code>warehouse</code> → <code>olist_analytics</code> (star schema: 7 dims + 4 facts) · <code>dbt</code> staging → <code>olist_analytics_staging</code> (9 views) · <code>dbt</code> marts → <code>olist_analytics_marts</code> (7 tables). Destination dataset is recorded in each materialisation metadata.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────
+     SLIDE 05 — ASSET DAG
+───────────────────────────────────────────────────────── -->
+<div class="slide" id="s5">
+  <div class="bar"></div>
+  <div class="hd">
+    <div class="hd-tag">02 · Orchestration</div>
+    <div class="hd-title">Asset Dependency Graph</div>
+    <div class="hd-sub">Two parallel ingestion branches converge before dbt transformation</div>
+  </div>
+  <div class="bd">
+    <div class="dag">
+      <svg viewBox="0 0 1050 300" width="100%" height="auto" style="display:block;">
+        <defs>
+          <marker id="a0" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0, 7 2.5, 0 5" fill="#94a3b8"/>
+          </marker>
+          <marker id="a1" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0, 7 2.5, 0 5" fill="#2E75B6"/>
+          </marker>
+        </defs>
+
+        <!-- START NODE -->
+        <rect x="5" y="89" width="148" height="46" rx="7" fill="#F0F4FF" stroke="#1F3864" stroke-width="2"/>
+        <text x="79" y="108" fill="#1F3864" font-size="11" font-weight="700" text-anchor="middle">bq_datasets_ready</text>
+        <text x="79" y="123" fill="#64748B" font-size="10" text-anchor="middle">preflight · 3 BQ datasets</text>
+
+        <!-- COLUMN SEPARATOR (DQ) -->
+        <line x1="212" y1="16" x2="212" y2="228" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+        <!-- CORE BRANCH (shifted +160) -->
+        <rect x="224" y="30" width="148" height="46" rx="7" fill="#fff" stroke="#C5DDF4" stroke-width="1.5"/>
+        <text x="298" y="49" fill="#1F3864" font-size="11" font-weight="700" text-anchor="middle">dq_core_validation</text>
+        <text x="298" y="64" fill="#64748B" font-size="10" text-anchor="middle">57+ DQ checks · CSV</text>
+
+        <rect x="424" y="30" width="158" height="46" rx="7" fill="#fff" stroke="#C5DDF4" stroke-width="1.5"/>
+        <text x="503" y="49" fill="#1F3864" font-size="11" font-weight="700" text-anchor="middle">meltano_core_extract_load</text>
+        <text x="503" y="64" fill="#64748B" font-size="10" text-anchor="middle">10 tables → olist_raw</text>
+
+        <!-- GEO BRANCH (shifted +160) -->
+        <rect x="224" y="148" width="148" height="46" rx="7" fill="#fff" stroke="#C5DDF4" stroke-width="1.5"/>
+        <text x="298" y="167" fill="#1F3864" font-size="11" font-weight="700" text-anchor="middle">dq_geo_validation</text>
+        <text x="298" y="182" fill="#64748B" font-size="10" text-anchor="middle">30 DQ checks · Geo CSV</text>
+
+        <rect x="424" y="148" width="158" height="46" rx="7" fill="#fff" stroke="#C5DDF4" stroke-width="1.5"/>
+        <text x="503" y="167" fill="#1F3864" font-size="11" font-weight="700" text-anchor="middle">meltano_geo_extract_load</text>
+        <text x="503" y="182" fill="#64748B" font-size="10" text-anchor="middle">SHA-256 incr. · DimGeo</text>
+
+        <!-- MERGE NODES (shifted +160) -->
+        <rect x="644" y="30" width="138" height="46" rx="7" fill="#EBF3FB" stroke="#2E75B6" stroke-width="1.5"/>
+        <text x="713" y="49" fill="#1F3864" font-size="11" font-weight="700" text-anchor="middle">star_schema_build</text>
+        <text x="713" y="64" fill="#64748B" font-size="10" text-anchor="middle">7 dims · 4 facts · DDL</text>
+
+        <rect x="644" y="148" width="138" height="46" rx="7" fill="#EBF3FB" stroke="#2E75B6" stroke-width="1.5"/>
+        <text x="713" y="167" fill="#1F3864" font-size="11" font-weight="700" text-anchor="middle">dbt_staging</text>
+        <text x="713" y="182" fill="#64748B" font-size="10" text-anchor="middle">9 staging models</text>
+
+        <!-- DBT CHAIN (shifted +160) -->
+        <rect x="840" y="89" width="126" height="46" rx="7" fill="#EBF3FB" stroke="#2E75B6" stroke-width="1.5"/>
+        <text x="903" y="108" fill="#1F3864" font-size="11" font-weight="700" text-anchor="middle">dbt_marts</text>
+        <text x="903" y="123" fill="#64748B" font-size="10" text-anchor="middle">7 mart tables</text>
+
+        <rect x="840" y="188" width="126" height="46" rx="7" fill="#EBF3FB" stroke="#2E75B6" stroke-width="2"/>
+        <text x="903" y="207" fill="#1F3864" font-size="11" font-weight="700" text-anchor="middle">dbt_tests</text>
+        <text x="903" y="222" fill="#64748B" font-size="10" text-anchor="middle">181+ schema tests</text>
+
+        <rect x="840" y="254" width="126" height="38" rx="7" fill="#E8F5E9" stroke="#16A34A" stroke-width="1.5"/>
+        <text x="903" y="277" fill="#1A5E3A" font-size="11" font-weight="700" text-anchor="middle">olist_analytics_charts</text>
+
+        <!-- EDGES -->
+        <!-- bq_datasets_ready → both DQ branches (fan out) -->
+        <path d="M153 112 C192 112 205 53 222 53" fill="none" stroke="#1F3864" stroke-width="1.6" marker-end="url(#a0)"/>
+        <path d="M153 112 C192 112 205 171 222 171" fill="none" stroke="#1F3864" stroke-width="1.6" marker-end="url(#a0)"/>
+        <!-- dq_core → meltano_core -->
+        <line x1="372" y1="53" x2="422" y2="53" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a0)"/>
+        <!-- dq_geo → meltano_geo -->
+        <line x1="372" y1="171" x2="422" y2="171" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a0)"/>
+        <!-- meltano_core → star_schema_build -->
+        <line x1="582" y1="53" x2="642" y2="53" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a0)"/>
+        <!-- meltano_geo → star_schema_build (cross) -->
+        <path d="M582 171 C615 171 615 80 642 58" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a0)"/>
+        <!-- meltano_core → dbt_staging (cross) -->
+        <path d="M582 53 C610 53 610 148 642 162" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a0)"/>
+        <!-- meltano_geo → dbt_staging -->
+        <line x1="582" y1="171" x2="642" y2="171" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a0)"/>
+        <!-- star_schema_build + dbt_staging → dbt_marts -->
+        <path d="M782 53 C810 53 810 110 838 112" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a0)"/>
+        <path d="M782 171 C810 171 810 128 838 118" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a0)"/>
+        <!-- Critical path (steel blue + green) -->
+        <line x1="903" y1="135" x2="903" y2="186" stroke="#2E75B6" stroke-width="1.8" marker-end="url(#a1)"/>
+        <line x1="903" y1="234" x2="903" y2="252" stroke="#16A34A" stroke-width="1.8" marker-end="url(#a0)"/>
+      </svg>
+    </div>
+
+    <div class="insight-row">
+      <div class="insight">
+        <h4>Parallel execution</h4>
+        <p><code>star_schema_build</code> and <code>dbt_staging</code> both depend on the two ingestion assets — Dagster's planner runs them concurrently, saving several minutes per run.</p>
+      </div>
+      <div class="insight amber">
+        <h4>Incremental geo</h4>
+        <p>SHA-256 hash of the source CSV is checked every run. If unchanged, the load is skipped and Dagster records <code>skipped: true</code> in materialisation metadata.</p>
+      </div>
+      <div class="insight green">
+        <h4>Failure propagation</h4>
+        <p>Asset failures propagate as <em>skipped</em> (not <em>failed</em>) to downstream assets — preserving the distinction between a self-failure and a blocked execution.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────
+     SLIDE 06 — JOBS & SCHEDULE
+───────────────────────────────────────────────────────── -->
+<div class="slide" id="s6">
+  <div class="bar"></div>
+  <div class="hd">
+    <div class="hd-tag">02 · Orchestration</div>
+    <div class="hd-title">Jobs, Schedule &amp; Resources</div>
+    <div class="hd-sub">Three purpose-built jobs let operators run targeted subsets of the pipeline</div>
+  </div>
+  <div class="bd">
+    <div class="two-col">
+      <div>
+        <div class="panel" style="margin-bottom: 12px;">
+          <div class="panel-hd"><h4>Job Definitions</h4></div>
+          <div class="panel-body">
+            <ul>
+              <li><strong>olist_daily_pipeline</strong> — all 10 assets; used by schedule and GHA</li>
+              <li><strong>olist_ingest_only</strong> — DQ + ingestion; fast reload without dbt</li>
+              <li><strong>olist_dbt_only</strong> — warehouse + dbt + charts; model-only reruns</li>
+            </ul>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hd"><h4>Schedule</h4></div>
+          <div class="panel-body">
+            <ul>
+              <li>Name: <strong>olist_daily_at_0600_utc</strong></li>
+              <li>Cron: <code>0 6 * * *</code> (06:00 UTC)</li>
+              <li>Status: <code>STOPPED</code> — GitHub Actions is primary</li>
+              <li>Enable via Dagster UI as GHA fallback</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel" style="margin-bottom: 12px;">
+          <div class="panel-hd"><h4>DbtCliResource</h4></div>
+          <div class="panel-body">
+            <ul>
+              <li>Injected into all 4 dbt assets at job startup</li>
+              <li>Project dir: <code>dbt_project/</code></li>
+              <li>Streams dbt events to the Dagster event log</li>
+              <li>Raises <code>DagsterDbtCliRuntimeError</code> on failure</li>
+            </ul>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hd"><h4>Upgrade Path → @dbt_assets</h4></div>
+          <div class="panel-body">
+            <ul>
+              <li>Replace 4 dbt assets with a single <code>@dbt_assets</code></li>
+              <li>Requires pre-compiled <code>manifest.json</code></li>
+              <li>Exposes per-model lineage in asset catalog</li>
+              <li>Needs custom <code>DagsterDbtTranslator</code></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <pre style="margin-top: 16px;"><span class="cm"># orchestration/dagster/__init__.py — Definitions wiring</span>
+defs = <span class="fn">Definitions</span>(
+    assets=[dq_core_validation, meltano_core_extract_load,
+            dq_geo_validation,  meltano_geo_extract_load,
+            star_schema_build,  dbt_staging, dbt_marts,
+            dbt_tests,          olist_analytics_charts],
+    resources={<span class="str">"dbt"</span>: DbtCliResource(
+        project_dir=str(PROJECT_ROOT / <span class="str">"dbt_project"</span>),
+        profiles_dir=str(PROJECT_ROOT / <span class="str">"dbt_project"</span>))},
+    jobs=[olist_daily_pipeline, olist_ingest_only, olist_dbt_only],
+    schedules=[<span class="fn">ScheduleDefinition</span>(
+        name=<span class="str">"olist_daily_at_0600_utc"</span>,
+        cron_schedule=<span class="str">"0 6 * * *"</span>,
+        job=olist_daily_pipeline,
+        default_status=DefaultScheduleStatus.STOPPED)],
+)</pre>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────
+     SLIDE 07 — GHA OVERVIEW
+───────────────────────────────────────────────────────── -->
+<div class="slide" id="s7">
+  <div class="bar"></div>
+  <div class="hd">
+    <div class="hd-tag">03 · CI/CD</div>
+    <div class="hd-title">GitHub Actions Daily Pipeline</div>
+    <div class="hd-sub">.github/workflows/pipeline-daily.yml — production orchestrator with dual cron triggers</div>
+  </div>
+  <div class="bd">
+    <div class="stats">
+      <div class="stat"><div class="stat-v">5</div><div class="stat-l">Jobs</div></div>
+      <div class="stat"><div class="stat-v">2</div><div class="stat-l">Cron triggers</div></div>
+      <div class="stat"><div class="stat-v">always()</div><div class="stat-l">Notify pattern</div></div>
+      <div class="stat"><div class="stat-v">Slack</div><div class="stat-l">Webhook alerts</div></div>
+      <div class="stat"><div class="stat-v">GCS</div><div class="stat-l">CSV source</div></div>
+    </div>
+
+    <div class="flow" style="margin: 0 0 14px;">
+      <div class="fnode" style="border-top:3px solid var(--steel);"><div class="fnode-l">Source</div><div class="fnode-n">GCS Bucket</div></div>
+      <div class="farrow">→</div>
+      <div class="fnode"><div class="fnode-l">ingest job</div><div class="fnode-n">gsutil -m cp</div></div>
+      <div class="farrow">→</div>
+      <div class="fnode"><div class="fnode-l">DQ + Meltano</div><div class="fnode-n">Python scripts</div></div>
+      <div class="farrow">→</div>
+      <div class="fnode" style="border-top:3px solid var(--steel);"><div class="fnode-l">BigQuery</div><div class="fnode-n">olist_raw</div></div>
+      <div class="farrow">→</div>
+      <div class="fnode"><div class="fnode-l">dbt jobs</div><div class="fnode-n">staging + marts</div></div>
+      <div class="farrow">→</div>
+      <div class="fnode" style="border-top:3px solid var(--steel);"><div class="fnode-l">BigQuery</div><div class="fnode-n">olist_analytics_marts</div></div>
+    </div>
+
+    <div class="two-col">
+      <div class="crons">
+        <div class="cron">
+          <div class="cron-time">02:00</div>
+          <div class="cron-zone">SGT — Full pipeline</div>
+          <div class="cron-expr">cron: '0 18 * * *' (UTC)</div>
+          <ul>
+            <li>All 5 jobs run</li>
+            <li>Ingest + dbt + tests</li>
+            <li>Slack notification</li>
+          </ul>
+        </div>
+        <div class="cron">
+          <div class="cron-time">06:00</div>
+          <div class="cron-zone">SGT — dbt only</div>
+          <div class="cron-expr">cron: '0 22 * * *' (UTC)</div>
+          <ul>
+            <li>Ingest job skipped</li>
+            <li>dbt-staging onward</li>
+            <li>Slack notification</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel" style="margin-bottom: 12px;">
+          <div class="panel-hd"><h4>Concurrency Guard</h4></div>
+          <div class="panel-body">
+            <ul>
+              <li>Group: <code>olist-daily-pipeline</code></li>
+              <li><code>cancel-in-progress: false</code></li>
+              <li>New run queues — never kills running pipeline</li>
+              <li>Prevents concurrent BigQuery writes</li>
+            </ul>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hd"><h4>Secrets &amp; Variables</h4></div>
+          <div class="panel-body">
+            <ul>
+              <li><code>GCP_SERVICE_ACCOUNT_KEY</code> — GitHub Secret</li>
+              <li><code>SLACK_WEBHOOK_URL</code> — GitHub Secret</li>
+              <li><code>GCP_PROJECT_ID</code> — GitHub Variable</li>
+              <li><code>GCS_BUCKET_NAME</code> — GitHub Variable</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <pre style="margin-top: 14px; font-size: 0.83rem;"><span class="cm"># pipeline-daily.yml — triggers and concurrency</span>
+<span class="kw">on</span>:
+  schedule:
+    - cron: <span class="str">'0 18 * * *'</span>   <span class="cm"># 02:00 SGT — full pipeline</span>
+    - cron: <span class="str">'0 22 * * *'</span>   <span class="cm"># 06:00 SGT — dbt-only</span>
+  workflow_dispatch:
+    inputs: { full_pipeline: { type: boolean, default: <span class="kw">false</span> } }
+
+<span class="kw">concurrency</span>:
+  group: olist-daily-pipeline
+  cancel-in-progress: <span class="kw">false</span>   <span class="cm"># queue new runs — never cancel in-flight</span></pre>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────
+     SLIDE 08 — 5-JOB CHAIN
+───────────────────────────────────────────────────────── -->
+<div class="slide" id="s8">
+  <div class="bar"></div>
+  <div class="hd">
+    <div class="hd-tag">03 · CI/CD</div>
+    <div class="hd-title">The 5-Job Pipeline Chain</div>
+    <div class="hd-sub">Sequential dependencies via <code>needs:</code>, with conditional execution on the ingest job</div>
+  </div>
+  <div class="bd">
+    <div class="jobs">
+      <div class="job">
+        <div class="job-n">1</div>
+        <div class="job-info">
+          <div class="job-title">ingest</div>
+          <div class="job-sub">Downloads CSVs from GCS → DQ validation (57+ core + 30 geo) → ingests 10 core tables and geolocation to BigQuery <code>olist_raw</code>.</div>
+          <code class="job-cond">if: schedule == '0 18 * * *' || (workflow_dispatch &amp;&amp; full_pipeline == true)</code>
+        </div>
+      </div>
+      <div class="job">
+        <div class="job-n">2</div>
+        <div class="job-info">
+          <div class="job-title">dbt-staging</div>
+          <div class="job-sub">Runs <code>dbt deps &amp;&amp; dbt run --select tag:staging</code> — 9 staging models (8 views + 1 table for geolocation). Runs even when ingest is skipped.</div>
+          <code class="job-cond">if: always() &amp;&amp; needs.ingest.result != 'failure' &amp;&amp; needs.ingest.result != 'cancelled'</code>
+        </div>
+      </div>
+      <div class="job">
+        <div class="job-n">3</div>
+        <div class="job-info">
+          <div class="job-title">dbt-marts</div>
+          <div class="job-sub">Executes star schema DDL (<code>warehouse/schema.sql</code>), then <code>dbt run --select tag:mart</code> — 7 mart tables with up to 4 parallel threads.</div>
+          <code class="job-cond">if: always() &amp;&amp; needs.dbt-staging.result == 'success'</code>
+        </div>
+      </div>
+      <div class="job">
+        <div class="job-n">4</div>
+        <div class="job-info">
+          <div class="job-title">integration-tests</div>
+          <div class="job-sub">Runs <code>dbt test</code> — 181+ tests (staging schema + mart schema + 6 SQL singular assertions) — then generates 8 analytics charts.</div>
+          <code class="job-cond">if: always() &amp;&amp; needs.dbt-marts.result == 'success'</code>
+        </div>
+      </div>
+      <div class="job">
+        <div class="job-n">5</div>
+        <div class="job-info">
+          <div class="job-title">notify</div>
+          <div class="job-sub">Always runs. Writes a structured summary to <code>$GITHUB_STEP_SUMMARY</code> and posts a Slack alert (success or failure) via webhook <code>curl</code>.</div>
+          <code class="job-cond">if: always() &nbsp; · &nbsp; needs: [ingest, dbt-staging, dbt-marts, integration-tests]</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────
+     SLIDE 09 — CONDITIONS & NOTIFICATIONS
+───────────────────────────────────────────────────────── -->
+<div class="slide" id="s9">
+  <div class="bar"></div>
+  <div class="hd">
+    <div class="hd-tag">03 · CI/CD</div>
+    <div class="hd-title">Conditional Logic &amp; Notifications</div>
+    <div class="hd-sub">The <code>always()</code> pattern ensures <code>notify</code> runs even when ingest is intentionally skipped</div>
+  </div>
+  <div class="bd">
+    <div class="two-col">
+      <div>
+        <pre style="font-size: 0.8rem;"><span class="cm"># Job 1: ingest — cron/dispatch conditional</span>
+<span class="kw">jobs</span>:
+  ingest:
+    <span class="kw">if</span>: |
+      github.event.schedule == <span class="str">'0 18 * * *'</span>
+      || (github.event_name ==
+          <span class="str">'workflow_dispatch'</span>
+          &amp;&amp; github.event.inputs.full_pipeline
+             == <span class="str">'true'</span>)
+    <span class="kw">steps</span>:
+      - <span class="kw">name</span>: Download CSVs from GCS
+        <span class="kw">run</span>: |
+          gsutil -m cp \
+            gs://$GCS_BUCKET/data/* data/
+      - <span class="kw">name</span>: DQ + Ingest
+        <span class="kw">run</span>: |
+          python data_quality/dq_validation.py
+          python data_quality/dq_geolocation.py
+          python ingestion/ingest_to_bigquery.py
+          python ingestion/ingest_geolocation.py</pre>
+
+        <pre style="font-size: 0.8rem; margin-top: 8px;"><span class="cm"># Job 2: skips gracefully if ingest was skipped</span>
+  dbt-staging:
+    <span class="kw">needs</span>: [ingest]
+    <span class="kw">if</span>: |
+      always()
+      &amp;&amp; needs.ingest.result != <span class="str">'failure'</span>
+      &amp;&amp; needs.ingest.result != <span class="str">'cancelled'</span></pre>
+      </div>
+
+      <div>
+        <pre style="font-size: 0.8rem;"><span class="cm"># Job 5: notify — always() pattern</span>
+  notify:
+    <span class="kw">needs</span>: [ingest, dbt-staging,
+            dbt-marts, integration-tests]
+    <span class="kw">if</span>: always()
+    <span class="kw">steps</span>:
+      - <span class="kw">name</span>: GitHub Step Summary
+        <span class="kw">run</span>: |
+          echo <span class="str">"## Pipeline Results"</span> \
+            >> $GITHUB_STEP_SUMMARY
+          echo <span class="str">"| Job | Status |"</span> \
+            >> $GITHUB_STEP_SUMMARY
+
+      - <span class="kw">name</span>: Slack — success
+        <span class="kw">if</span>: |
+          needs.integration-tests.result
+          == <span class="str">'success'</span>
+        <span class="kw">run</span>: |
+          curl -X POST $SLACK_WEBHOOK_URL \
+            -d <span class="str">'{"text":"✅ succeeded"}'</span>
+
+      - <span class="kw">name</span>: Slack — failure
+        <span class="kw">if</span>: |
+          needs.ingest.result == <span class="str">'failure'</span>
+          || needs.dbt-staging.result
+             == <span class="str">'failure'</span>
+          || needs.dbt-marts.result
+             == <span class="str">'failure'</span>
+          || needs.integration-tests.result
+             == <span class="str">'failure'</span>
+        <span class="kw">run</span>: |
+          curl -X POST $SLACK_WEBHOOK_URL \
+            -d <span class="str">'{"text":"❌ failed"}'</span></pre>
+
+        <div class="insight" style="margin-top: 10px;">
+          <h4>Why always() matters</h4>
+          <p>Without it, a skipped upstream job propagates a "skipped" status that blocks <code>notify</code>. <code>always()</code> breaks that propagation — <code>notify</code> fires regardless of whether <code>ingest</code> ran, was skipped, failed, or succeeded.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────
+     SLIDE 10 — SUMMARY
+───────────────────────────────────────────────────────── -->
+<div class="slide" id="s10">
+  <div class="bar"></div>
+  <div class="hd">
+    <div class="hd-tag">Summary</div>
+    <div class="hd-title">Three Layers, One Pipeline</div>
+    <div class="hd-sub">Each orchestration layer serves a distinct purpose — complementary, not redundant</div>
+  </div>
+  <div class="bd">
+    <div class="three-col">
+      <div class="panel">
+        <div class="panel-hd"><h4>run_pipeline.sh</h4></div>
+        <div class="panel-body">
+          <ul>
+            <li><strong>Purpose</strong> — Developer tool</li>
+            <li><strong>Trigger</strong> — Manual, ad-hoc</li>
+            <li><strong>Environment</strong> — Local server</li>
+            <li><strong>Steps</strong> — 7 sequential</li>
+            <li><strong>Fail mode</strong> — <code>set -euo pipefail</code></li>
+            <li><strong>Best for</strong> — Debug, smoke test, first-time setup</li>
+          </ul>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hd"><h4>Dagster + Meltano</h4></div>
+        <div class="panel-body">
+          <ul>
+            <li><strong>Purpose</strong> — Observability &amp; retry</li>
+            <li><strong>ELT layer</strong> — Meltano (Singer) → Python scripts</li>
+            <li><strong>Trigger</strong> — UI / schedule (STOPPED)</li>
+            <li><strong>Environment</strong> — Local Dagster server</li>
+            <li><strong>Assets</strong> — 10 (parallel branches)</li>
+            <li><strong>Fail mode</strong> — Failure + skip downstream</li>
+            <li><strong>Best for</strong> — Materialisation audit trail</li>
+          </ul>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hd"><h4>GitHub Actions</h4></div>
+        <div class="panel-body">
+          <ul>
+            <li><strong>Purpose</strong> — Production orchestration</li>
+            <li><strong>Trigger</strong> — 2 crons + workflow_dispatch</li>
+            <li><strong>Environment</strong> — ubuntu-latest runner</li>
+            <li><strong>Jobs</strong> — 5 sequential</li>
+            <li><strong>Fail mode</strong> — <code>always()</code> notify</li>
+            <li><strong>Best for</strong> — Automated daily production runs</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top: 14px;">
+      <div class="panel-hd"><h4>Shared Infrastructure — GCS &amp; BigQuery underpin all three layers</h4></div>
+      <div class="panel-body">
+        <div class="flow" style="padding: 4px 0;">
+          <div class="fnode" style="border-top:3px solid var(--steel);"><div class="fnode-l">Source</div><div class="fnode-n">GCS Bucket</div></div>
+          <div class="farrow">→</div>
+          <div class="fnode"><div class="fnode-l">ELT</div><div class="fnode-n">Meltano layer</div></div>
+          <div class="farrow">→</div>
+          <div class="fnode" style="border-top:3px solid var(--steel);"><div class="fnode-l">BigQuery</div><div class="fnode-n">olist_raw</div></div>
+          <div class="farrow">→</div>
+          <div class="fnode"><div class="fnode-l">DDL</div><div class="fnode-n">Star Schema</div></div>
+          <div class="farrow">→</div>
+          <div class="fnode"><div class="fnode-l">dbt</div><div class="fnode-n">Staging views</div></div>
+          <div class="farrow">→</div>
+          <div class="fnode" style="border-top:3px solid var(--steel);"><div class="fnode-l">BigQuery</div><div class="fnode-n">analytics_marts</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight green" style="margin-top: 14px;">
+      <h4>Production flow (02:00 SGT)</h4>
+      <p>GitHub Actions downloads CSVs from GCS → runs 57+ DQ checks → ingests 10 tables + geolocation to BigQuery → runs 9 dbt staging models → runs 7 dbt mart tables + star schema DDL → runs 181+ tests → generates 8 analytics charts → notifies Slack. Total run time: ~15–25 minutes.</p>
+    </div>
+
+    <div class="two-col" style="margin-top: 14px; gap: 14px;">
+      <div class="insight amber">
+        <h4>Dagster schedule is STOPPED intentionally</h4>
+        <p>Enabling it while GHA is active causes double-runs. To migrate away from GHA, flip <code>DefaultScheduleStatus.STOPPED → RUNNING</code> in <code>orchestration/dagster/__init__.py</code>.</p>
+      </div>
+      <div class="insight">
+        <h4>SHA-256 incremental guard</h4>
+        <p>In both <code>ingest_geolocation.py</code> and the Dagster geo asset. The 1M-row CSV rarely changes — skipping the load on an unchanged file saves ~3 minutes per run.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 22px; font-size: 0.8rem; color: var(--muted); text-align: right; font-family: 'Courier New', monospace;">
+      Olist Analytics Platform &nbsp;·&nbsp; Pipeline Architecture &nbsp;·&nbsp; Jun 2026
+    </div>
+  </div>
+</div>
+
+</div><!-- .main -->
+
+<script>
+const slides   = Array.from(document.querySelectorAll('.slide'));
+const navItems = Array.from(document.querySelectorAll('.nav-item'));
+const fill     = document.querySelector('.nav-fill');
+const counter  = document.querySelector('.nav-count');
+const TOTAL    = 10;
+let current = 0, animating = false;
+
+function goTo(idx) {
+  if (animating || idx === current || idx < 0 || idx >= TOTAL) return;
+  animating = true;
+
+  slides[current].classList.remove('active');
+  slides[current].classList.add('exit');
+  slides[idx].classList.add('active');
+
+  setTimeout(() => { slides[current].classList.remove('exit'); animating = false; }, 340);
+
+  current = idx;
+  navItems.forEach((el, i) => el.classList.toggle('active', i === current));
+  fill.style.width    = ((current + 1) / TOTAL * 100) + '%';
+  counter.textContent = `${current + 1} / ${TOTAL}`;
+}
+
+document.addEventListener('keydown', e => {
+  if (['ArrowRight','ArrowDown',' '].includes(e.key)) { e.preventDefault(); goTo(current + 1); }
+  else if (['ArrowLeft','ArrowUp'].includes(e.key))   { e.preventDefault(); goTo(current - 1); }
+  else if (e.key === 'Home') goTo(0);
+  else if (e.key === 'End')  goTo(TOTAL - 1);
+});
+
+let tx = null;
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+document.addEventListener('touchend',   e => {
+  if (tx === null) return;
+  const dx = e.changedTouches[0].clientX - tx;
+  if (Math.abs(dx) > 50) goTo(current + (dx < 0 ? 1 : -1));
+  tx = null;
+});
+</script>
 </body>
 </html>
